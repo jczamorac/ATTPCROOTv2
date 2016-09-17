@@ -14,7 +14,7 @@
 
 ClassImp(ATHoughTask);
 
-ATHoughTask::ATHoughTask()
+ATHoughTask::ATHoughTask():fAtPadCoord(boost::extents[10240][3][2])
 {
   fLogger = FairLogger::GetLogger();
   fPar = NULL;
@@ -25,6 +25,7 @@ ATHoughTask::ATHoughTask()
   fIsPhiReco = kFALSE;
   fRadThreshold=0.0;
   fHoughThreshold = 0.0;
+  fHoughDistance = 5.0;
 
   fEvent = NULL;
   fProtoevent = NULL;
@@ -49,12 +50,14 @@ void   ATHoughTask::SetLinearHough()                       { fIsLinear = kTRUE;f
 void   ATHoughTask::SetCircularHough()                     { fIsCircular = kTRUE;fIsLinear = kFALSE;}
 void   ATHoughTask::SetPhiReco()                           { fIsPhiReco = kTRUE;}
 void   ATHoughTask::SetHoughThreshold(Double_t value)      { fHoughThreshold = value;}
+void   ATHoughTask::SetHoughDistance(Double_t value)       { fHoughDistance = value;}
 void   ATHoughTask::SetEnableMap()                         { fIsEnableMap = kTRUE;}
 void   ATHoughTask::SetMap(Char_t const *map)              { fMap = map; }
 
 InitStatus
 ATHoughTask::Init()
 {
+
 
   if(fIsLinear) fHoughArray = new TClonesArray("ATHoughSpaceLine");
   else if(fIsCircular) fHoughArray = new TClonesArray("ATHoughSpaceCircle");
@@ -93,7 +96,9 @@ ATHoughTask::Init()
   Bool_t MapIn = fAtMapPtr->ParseXMLMap(fMap);
   fLogger -> Info(MESSAGE_ORIGIN, "ATTPC Map enabled");
   if(!MapIn) std::cerr<<" -E- ATHoughTask - : Map was enabled but not found ! "<<std::endl;
+  fAtPadCoord = fAtMapPtr->GetPadCoordArr();
   }
+
 
 
   ioMan -> Register("ATHough", "ATTPC", fHoughArray, fIsPersistence);
@@ -149,15 +154,17 @@ ATHoughTask::Exec(Option_t *opt)
 
             ATHoughSpaceLine *HoughSpace = (ATHoughSpaceLine *) new ((*fHoughArray)[0]) ATHoughSpaceLine();
             HoughSpace->SetRadiusThreshold(fRadThreshold);
+            HoughSpace->SetHoughDistance(fHoughDistance);
             if(fIsPhiReco) HoughSpace ->CalcHoughSpace(fProtoevent,kTRUE,kTRUE,kTRUE,kTRUE);
-            else HoughSpace ->CalcHoughSpace(fEvent,kTRUE,kTRUE,kTRUE);
+            else HoughSpace->CalcHoughSpace(fEvent);
 
 
     }
     else if(fIsCircular){
             ATHoughSpaceCircle *HoughSpace = (ATHoughSpaceCircle *) new ((*fHoughArray)[0]) ATHoughSpaceCircle();
             HoughSpace ->SetThreshold(fHoughThreshold);
-            if(fIsEnableMap) HoughSpace ->CalcHoughSpace(fEvent,fPadPlane);
+            //if(fIsEnableMap) HoughSpace ->CalcHoughSpace(fEvent,fPadPlane);
+            if(fIsEnableMap) HoughSpace ->CalcHoughSpace(fEvent,fPadPlane,fAtPadCoord);
             else HoughSpace ->CalcHoughSpace(fEvent,kTRUE,kTRUE,kTRUE);
     }
 

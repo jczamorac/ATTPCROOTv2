@@ -33,6 +33,7 @@ class ATPSA
     void SetMaxFinder();
     void SetBaseCorrection(Bool_t value);
     void SetTimeCorrection(Bool_t value);
+    //void SetAuxChannel(std::vector<Int_t> AuxCh);
 
     virtual void Analyze(ATRawEvent *rawEvent, ATEvent *event) = 0;
 
@@ -66,6 +67,8 @@ class ATPSA
     Double_t fTiltAng;
     TVector3 fLorentzVector;
     Int_t fTB0;
+    Double_t fThetaPad;
+    //std::vector<Int_t> fAuxChannels; //Auxiliary external channels
 
 
     Double_t CalculateX(Double_t row);      ///< Calculate x position in mm. This returns the center position of given pad row.
@@ -79,6 +82,8 @@ class ATPSA
     Double_t CalculateZCorr(Double_t zval, Int_t Tbz);
 
     void CalcLorentzVector();
+
+    TVector3 RotateDetector(Double_t x,Double_t y,Double_t z,Int_t tb);
 
 
 

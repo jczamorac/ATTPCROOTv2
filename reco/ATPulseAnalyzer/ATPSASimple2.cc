@@ -137,13 +137,17 @@ ATPSASimple2::Analyze(ATRawEvent *rawEvent, ATEvent *event)
 
       Double_t basecorr=0.0;
       Double_t slope = 0.0;
+      Int_t slope_cnt =0;
 
         if(maxAdcIdx>20) for (Int_t i = 0; i < 10; i++){
 
            basecorr+=floatADC[maxAdcIdx-8-i];
+
            if(i<5){
              slope = (floatADC[maxAdcIdx-i] - floatADC[maxAdcIdx-i-1]); //Derivate for 5 Timebuckets
-             if(slope<0 && floatADC[maxAdcIdx]<3000 && fIsBaseCorr) fValidDerivative = kFALSE; //3000 condition to avoid killing saturated pads
+              //if(slope<0 && floatADC[maxAdcIdx]<3500 && fIsBaseCorr && fIsMaxFinder)
+               //fValidDerivative = kFALSE; //3500 condition to avoid killing saturated pads
+              if(slope<0 && fIsBaseCorr && fIsMaxFinder) slope_cnt++;
            }
 
 
@@ -154,10 +158,29 @@ ATPSASimple2::Analyze(ATRawEvent *rawEvent, ATEvent *event)
 
       Double_t timemax = 0.5*(floatADC[maxAdcIdx-1] - floatADC[maxAdcIdx+1])  /  (floatADC[maxAdcIdx-1] + floatADC[maxAdcIdx+1] - 2*floatADC[maxAdcIdx]);
 
+      // Time Correction by Center of Gravity
+      Double_t TBCorr=0.0;
+      Double_t TB_TotQ = 0.0;
+
+
+      if(maxAdcIdx>11){
+        for(Int_t i=0;i<11;i++){
+
+          TBCorr  += (floatADC[maxAdcIdx-i+5] - basecorr/10.0)*(maxAdcIdx-i+5); //Substract the baseline correction
+          TB_TotQ += floatADC[maxAdcIdx-i+5] - basecorr/10.0;
+
+       }
+     }
+
+    TBCorr = TBCorr/TB_TotQ;
+
+
+
       if(fIsBaseCorr) charge = adc[maxAdcIdx] - basecorr/10.0; //Number of timebuckets taken into account
       else charge = adc[maxAdcIdx];
 
-      if(fIsTimeCorr) zPos = CalculateZGeo(maxAdcIdx+timemax);
+
+      if(fIsTimeCorr) zPos = CalculateZGeo(TBCorr);
       else zPos = CalculateZGeo(maxAdcIdx);
       //std::cout<<" zPos : "<<zPos<<" maxAdcIdx : "<<maxAdcIdx<<" timemax : "<<timemax<<std::endl;
 
@@ -182,23 +205,30 @@ ATPSASimple2::Analyze(ATRawEvent *rawEvent, ATEvent *event)
 
 
     if(fValidThreshold && fValidDerivative){
+
       if(iPeak==0) QEventTot+=QHitTot; //Sum only if Hit is valid - We only sum once (iPeak==0) to account for the whole spectrum.
 
-      HitPosRot = r * TVector3(xPos,yPos,zPos); // 1.- Rotate the pad plane
+
+      /*HitPosRot = r * TVector3(xPos,yPos,zPos); // 1.- Rotate the pad plane
       xPosCorr = CalculateXCorr(HitPosRot.X(),maxAdcIdx);// 2.- Correct for the Lorentz transformation
       yPosCorr = CalculateYCorr(HitPosRot.Y(),maxAdcIdx);
       zPosCorr = CalculateZCorr(HitPosRot.Z(),maxAdcIdx);
       TVector3 RotAux(xPosCorr,yPosCorr,zPosCorr);
        //3.- Rotate the tracks to put them in the beam direction
-      yPosCorr+=TMath::Tan(fTiltAng*TMath::Pi()/180.0)*(1000.0-zPosCorr);
+      yPosCorr+=TMath::Tan(fTiltAng*TMath::Pi()/180.0)*(1000.0-zPosCorr);*/
+
+      TVector3 posRot =  RotateDetector(xPos,yPos,zPos,maxAdcIdx);
 
      // ATHit *hit = new ATHit(PadNum,hitNum, HitPosRot.X(), HitPosRot.Y(),HitPosRot.Z(), charge);
       ATHit *hit = new ATHit(PadNum,hitNum, xPos, yPos, zPos, charge);
-      //std::cout<<" AFTER zPos : "<<zPos<<" maxAdcIdx : "<<maxAdcIdx<<" timemax : "<<timemax<<std::endl;
      // ATHit *hit = new ATHit(PadNum,hitNum, xPosCorr, yPosCorr, zPosCorr, charge);
-      hit->SetPositionCorr(xPosCorr, yPosCorr, zPosCorr);
+      //hit->SetPositionCorr(xPosCorr, yPosCorr, zPosCorr);
+      hit->SetPositionCorr(posRot.X(),posRot.Y(), posRot.Z());
       hit->SetTimeStamp(maxAdcIdx);
+      hit->SetTimeStampCorr(TBCorr);
+      hit->SetTimeStampCorrInter(timemax);
       hit->SetBaseCorr(basecorr/10.0);
+      hit->SetSlopeCnt(slope_cnt);
       PadHitNum++;
       hit->SetQHit(QHitTot); // TODO: The charge of each hit is the total charge of the spectrum, so for double structures this is unrealistic.
       HitPos =  hit->GetPosition();

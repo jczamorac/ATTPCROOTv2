@@ -15,6 +15,10 @@
 #include "AtTpcMap.h"
 #include "TH2Poly.h"
 
+#ifndef __CINT__ // Boost
+#include <boost/multi_array.hpp>
+#endif //__CINT__
+
 // ROOT classes
 #include "TClonesArray.h"
 
@@ -23,6 +27,9 @@ class ATHoughTask : public FairTask {
     ATHoughTask();
     ~ATHoughTask();
 
+    typedef boost::multi_array<double,3> multiarray;
+    typedef multiarray::index index;
+    multiarray fAtPadCoord;
 
     void SetPersistence(Bool_t value = kTRUE);
     void SetThreshold(Double_t threshold);
@@ -32,6 +39,7 @@ class ATHoughTask : public FairTask {
     // needed prior to this mode of the task
     void SetRadiusThreshold(Float_t value);
     void SetHoughThreshold(Double_t value);
+    void SetHoughDistance(Double_t value);
     void SetEnableMap();
     void SetMap(Char_t const *map);
 
@@ -63,6 +71,7 @@ class ATHoughTask : public FairTask {
     Double_t fThreshold;
     Double_t fRadThreshold;
     Double_t fHoughThreshold;
+    Double_t fHoughDistance;
 
     Int_t fInternalID;
 

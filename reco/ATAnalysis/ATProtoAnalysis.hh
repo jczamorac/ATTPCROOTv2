@@ -30,7 +30,7 @@ class ATProtoAnalysis : public ATAnalysis{
 
       private:
 
-          ClassDef(ATProtoAnalysis, 1);
+          ClassDef(ATProtoAnalysis, 2);
 
 
 };

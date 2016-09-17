@@ -1,13 +1,13 @@
-void he8_sim(Int_t nEvents = 10000, TString mcEngine = "TGeant4")
+void he8_sim(Int_t nEvents = 1000, TString mcEngine = "TGeant4")
 {
 
   TString dir = getenv("VMCWORKDIR");
 
   // Output file name
-  TString outFile ="./data/attpcsim.root";
+  TString outFile ="./data/attpcsim_proto.root";
 
   // Parameter file name
-  TString parFile="./data/attpcpar.root";
+  TString parFile="./data/attpcpar_proto.root";
 
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;

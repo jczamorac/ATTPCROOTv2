@@ -110,6 +110,12 @@ std::vector<Double_t> ATMCMinimization::GetPosXBack()    {return fPosXBack;}
 std::vector<Double_t> ATMCMinimization::GetPosYBack()    {return fPosYBack;}
 std::vector<Double_t> ATMCMinimization::GetPosZBack()    {return fPosZBack;}
 
+Bool_t ATMCMinimization::MinimizeOptMapAmp(Double_t* parameter,ATEvent *event, TH2Poly* hPadPlane,multiarray PadCoord)
+{
+
+
+}
+
 Bool_t ATMCMinimization::Minimize(Double_t* parameter,ATEvent *event){
 
                         std::vector<Double_t> xc;
@@ -203,7 +209,7 @@ Bool_t ATMCMinimization::Minimize(Double_t* parameter,ATEvent *event){
                         if(kVerbose) std::cout<<cGREEN<<" Energy of the proton : "<<e0sm<<" MeV "<<cNORMAL<<std::endl;
                         Double_t chimininit=1.e6;
 
-                        if(bro==0 || isnan(e0sm) || e0sm>100.0){
+                        if(bro==0 || std::isnan(e0sm) || e0sm>100.0){
                             if(kVerbose) std::cout<<cRED<<" Invalid energy !"<<cNORMAL<<std::endl;
                             return kFALSE;
                           }
@@ -457,7 +463,7 @@ Bool_t ATMCMinimization::Minimize(Double_t* parameter,ATEvent *event){
                                                                 //	if(z.gt.ztot) go to 100
                                                                 if(zTBCorr[iterCorrNorm]<0.0) break;
                                                                 //std::cout<<" Ekin : "<<ekin<<std::endl;
-                                                                if(ekin<0.01 || isnan(ekin)) break;
+                                                                if(ekin<0.01 || std::isnan(ekin)) break;
                                                                 //if(ekin<0) std::cout<<" Ekin "<<std::endl;
 
 
@@ -1042,7 +1048,7 @@ Bool_t ATMCMinimization::MinimizeOpt(Double_t* parameter,ATEvent *event){
                 if(kVerbose) std::cout<<cGREEN<<" Energy of the proton : "<<e0sm<<" MeV "<<cNORMAL<<std::endl;
                 Double_t chimininit=1.e6;
 
-                if(bro==0 || isnan(e0sm) || e0sm>100.0){
+                if(bro==0 || std::isnan(e0sm) || e0sm>100.0){
                       if(kVerbose) std::cout<<cRED<<" Invalid energy !"<<cNORMAL<<std::endl;
                     return kFALSE;
                   }
@@ -1282,7 +1288,7 @@ Bool_t ATMCMinimization::MinimizeOpt(Double_t* parameter,ATEvent *event){
                                                                                   //	if(z.gt.ztot) go to 100
                                                                                   if(zTBCorr[iterCorrNorm]<0.0) break;
                                                                                   //std::cout<<" Ekin : "<<ekin<<std::endl;
-                                                                                  if(ekin<0.01 || isnan(ekin)) break;
+                                                                                  if(ekin<0.01 || std::isnan(ekin)) break;
                                                                                   //if(ekin<0) std::cout<<" Ekin "<<std::endl;
 
 
@@ -1686,7 +1692,7 @@ Bool_t ATMCMinimization::MinimizeOptMap(Double_t* parameter,ATEvent *event, TH2P
                 if(kVerbose) std::cout<<cGREEN<<" Energy of the proton : "<<e0sm<<" MeV "<<cNORMAL<<std::endl;
                 Double_t chimininit=1.e6;
 
-                if(bro==0 || isnan(e0sm) || e0sm>100.0){
+                if(bro==0 || std::isnan(e0sm) || e0sm>100.0){
                       if(kVerbose) std::cout<<cRED<<" Invalid energy !"<<cNORMAL<<std::endl;
                     return kFALSE;
                   }
@@ -1926,7 +1932,7 @@ Bool_t ATMCMinimization::MinimizeOptMap(Double_t* parameter,ATEvent *event, TH2P
                                                                                   //	if(z.gt.ztot) go to 100
                                                                                   if(zTBCorr[iterCorrNorm]<0.0) break;
                                                                                   //std::cout<<" Ekin : "<<ekin<<std::endl;
-                                                                                  if(ekin<0.01 || isnan(ekin)) break;
+                                                                                  if(ekin<0.01 || std::isnan(ekin)) break;
                                                                                   //if(ekin<0) std::cout<<" Ekin "<<std::endl;
 
 

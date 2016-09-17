@@ -85,6 +85,9 @@ class ATDecoder2Task : public FairTask {
     // Setting Auxiliary channels
     void SetAuxChannels(std::vector<Int_t> AuxCh);
 
+    void SetNumCobo(Int_t numCobo);
+
+
   private:
     FairLogger *fLogger;                ///< FairLogger singleton
 
@@ -126,7 +129,9 @@ class ATDecoder2Task : public FairTask {
     TString fLowgMap;
     TString fXtalkMap;
 
-    Int_t fInternalID;
+    Long64_t fInternalID;
+
+    Int_t fNumCobo;
 
     std::vector<Int_t> fAuxChannels;   /// Auxiliary channels in GET electronics
 

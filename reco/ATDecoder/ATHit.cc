@@ -14,7 +14,9 @@ ATHit::ATHit()
     fHitMult = 0;
     fTimeStamp = 0;
     fTimeStampCorr = 0.0;
+    fTimeStampCorrInter = 0.0;
     fBaseCorr = 0.0;
+    fSlopeCnt=0;
 }
 
 ATHit::ATHit(Int_t hitID, TVector3 vec, Double_t charge)
@@ -29,7 +31,9 @@ ATHit::ATHit(Int_t hitID, TVector3 vec, Double_t charge)
     fHitMult = 0;
     fTimeStamp = 0;
     fTimeStampCorr = 0.0;
+    fTimeStampCorrInter = 0.0;
     fBaseCorr = 0.0;
+    fSlopeCnt=0;
 }
 
 ATHit::ATHit(Int_t hitID, Double_t x, Double_t y, Double_t z, Double_t charge)
@@ -44,7 +48,9 @@ ATHit::ATHit(Int_t hitID, Double_t x, Double_t y, Double_t z, Double_t charge)
     fHitMult = 0;
     fTimeStamp = 0;
     fTimeStampCorr = 0.0;
+    fTimeStampCorrInter = 0.0;
     fBaseCorr = 0.0;
+    fSlopeCnt=0;
 }
 
 ATHit::ATHit(Int_t PadNum,Int_t hitID, Double_t x, Double_t y, Double_t z, Double_t charge)
@@ -58,7 +64,9 @@ ATHit::ATHit(Int_t PadNum,Int_t hitID, Double_t x, Double_t y, Double_t z, Doubl
     fHitMult = 0;
     fTimeStamp = 0;
     fTimeStampCorr = 0.0;
+    fTimeStampCorrInter = 0.0;
     fBaseCorr = 0.0;
+    fSlopeCnt=0;
 
 }
 
@@ -68,6 +76,8 @@ ATHit::ATHit(ATHit *hit)
   SetHit(hit -> GetHitID(), hit -> GetPosition(), hit -> GetCharge());
   SetTimeStamp(hit->GetTimeStamp());
   SetTimeStampCorr(hit->GetTimeStampCorr());
+  SetTimeStampCorrInter(hit->GetTimeStampCorrInter());
+  SetSlopeCnt(hit->GetSlopeCnt());
   fIsClustered = hit -> IsClustered();
   fClusterID = hit -> GetClusterID();
   fQhit = -100.0;
@@ -95,7 +105,9 @@ void ATHit::SetQHit(Double_t Qhit)                                      { fQhit 
 void ATHit::SetHitMult(Int_t HitMult)				                           	{ fHitMult = HitMult;}
 void ATHit::SetTimeStamp(Int_t Time)				                           	{ fTimeStamp = Time;}
 void ATHit::SetTimeStampCorr(Double_t TimeCorr)				                  { fTimeStampCorr = TimeCorr;}
+void ATHit::SetTimeStampCorrInter(Double_t TimeCorrInter)				        { fTimeStampCorrInter = TimeCorrInter;}
 void ATHit::SetBaseCorr(Double_t BaseCorr)                              { fBaseCorr = BaseCorr;}
+void ATHit::SetSlopeCnt(Int_t cnt)                                     { fSlopeCnt = cnt;}
 
 void ATHit::SetIsClustered(Bool_t value)                                { fIsClustered = value; }
 void ATHit::SetClusterID(Int_t clusterID)                               { fClusterID = clusterID; fIsClustered = kTRUE; }
@@ -111,6 +123,8 @@ Double_t ATHit::GetQHit()                                               { return
 Int_t ATHit::GetHitMult()						                                    { return fHitMult;}
 Int_t ATHit::GetTimeStamp()						                                  { return fTimeStamp;}
 Double_t ATHit::GetTimeStampCorr()						                          { return fTimeStampCorr;}
+Double_t ATHit::GetTimeStampCorrInter()						                          { return fTimeStampCorrInter;}
 Bool_t ATHit::IsClustered()                                             { return fIsClustered; }
 Int_t ATHit::GetClusterID()                                             { return (fIsClustered ? fClusterID : -1); }
 Double_t ATHit::GetBaseCorr()                                           { return fBaseCorr; }
+Int_t ATHit::GetSlopeCnt()                                              { return fSlopeCnt; }

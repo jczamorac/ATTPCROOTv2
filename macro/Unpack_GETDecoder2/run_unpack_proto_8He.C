@@ -1,6 +1,6 @@
-void run_unpack_proto_8He(TString dataFile = "runfiles/run_ISAC2015_test.txt",TString parameterFile = "pATTPC.TRIUMF2015.par"){
-//void run_unpack_proto_8He_2(TString dataFile = "/data/TRIUMF/ISAC_2015/CoBo_AsAd0_2015-12-06T01:48:29.974_0000.graw",TString parameterFile = "pATTPC.TRIUMF2015.par"){
-//void run_unpack_proto_8He_2(TString dataFile = "/Users/Yassid/Desktop/ATTPC/Data/TRIUMF/run_0259/CoBo_AsAd0_2015-12-05T14_33_58.545_0000.graw",TString parameterFile = "pATTPC.TRIUMF2015.par"){
+//void run_unpack_proto_8He(TString dataFile = "runfiles/run_ISAC2015_test.txt",TString parameterFile = "pATTPC.TRIUMF2015.par"){
+//void run_unpack_proto_8He(TString dataFile = "/data/TRIUMF/ISAC_2015/CoBo_AsAd0_2015-12-06T01:48:29.974_0000.graw",TString parameterFile = "pATTPC.TRIUMF2015.par"){
+void run_unpack_proto_8He(TString dataFile = "/run/media/ayyadlim/ISAC_PATTPC_2015/Production/CoBo_AsAd0_2015-12-07T01:55:27.343_0016.graw",TString parameterFile = "pATTPC.TRIUMF2015.par"){
 
     // -----   Timer   --------------------------------------------------------
 	TStopwatch timer;
@@ -73,7 +73,7 @@ void run_unpack_proto_8He(TString dataFile = "runfiles/run_ISAC2015_test.txt",TS
 
    run->Init();
 
-   run->Run(0,1000);
+   run->Run(0,100);
 	 //run -> RunOnTBData();
 
  // -----   Finish   -------------------------------------------------------
