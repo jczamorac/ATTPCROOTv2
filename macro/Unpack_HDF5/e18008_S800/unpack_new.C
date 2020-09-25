@@ -1,7 +1,16 @@
-//Unpacks tpc files from /mnt/rawdata/ to /mnt/analysis/e12014/TPC/unpacked
+//Unpacks tpc files from /mnt/daqtesting/e18008_attpc_transfer to /mnt/analysis/e18008/rootMerg/
+
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m\e[1m"
+#define WHITE   "\033[37m"
 
 // Requires the TPC run number
-void unpack_new(int runNumber=2)
+void unpack_new(int runNumberS800, int runNumberATTPC)
 {
   //Load the library for unpacking and reconstruction
   gSystem->Load("libATTPCReco.so");
@@ -13,12 +22,12 @@ void unpack_new(int runNumber=2)
 
   //Set the input file
   //TString inputFile = TString::Format("hdf5Files/run_%04d.h5", runNumber);
-  TString inputFile = TString::Format("/home/juan/FairRoot/ATTPCROOTv2_simon/run_%04d.h5", runNumber);
+  TString inputFile = TString::Format("/mnt/daqtesting/e18008_attpc_transfer/h5/run_%04d.h5", runNumberATTPC);
 
   //Set the output file
-  TString outputFile = TString::Format("run_unpacked_%04d_new.root", runNumber);
+  TString outputFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_2%03d_%04d.root", runNumberS800, runNumberATTPC);
 
-  std::cout << "Unpacking run " << runNumber << " from: " << inputFile << std::endl;
+  std::cout << "Unpacking AT-TPC run " << runNumberATTPC << " from: " << inputFile << std::endl;
   std::cout << "Saving in: " << outputFile << std::endl;
 
   //Set the mapping for the TPC
@@ -55,7 +64,7 @@ void unpack_new(int runNumber=2)
   HDFParserTask->SetATTPCMap(scriptdir.Data());
   HDFParserTask->SetFileName(inputFile.Data());
   HDFParserTask->SetOldFormat(false);
-  HDFParserTask->SetTimestampIndex(1);
+  HDFParserTask->SetTimestampIndex(2);
   HDFParserTask->SetBaseLineSubtraction(kTRUE);
 
  // auto hash = HDFParserTask->CalculateHash(10,0,2,32);
@@ -66,13 +75,15 @@ void unpack_new(int runNumber=2)
 
   //TString S800File = TString::Format("../Simulation/d2He/Analyis_d2He/rootS800/raw/test-runs800-48Ca-RAW-%04d.root", runNumber);
   //TString S800File = "/mnt/simulations/ceclub/giraud/attpc/ATTPCROOTv2/macro/Simulation/d2He/Analyis_d2He/rootS800/cal/test-runs800-48Ca-CAL-0001.root";
-  TString S800File = "/home/juan/FairRoot/ATTPCROOTv2_simon/test-runs800-48Ca-CAL-0001.root";
+  TString S800File = TString::Format("/mnt/analysis/e18008/rootS800/cal/run-2%03d-00.root", runNumberS800);
   ATMergeTask *MergeEvt = new ATMergeTask();
   MergeEvt->SetS800File(S800File);
   MergeEvt->SetPersistence(kTRUE);
-  MergeEvt->SetOptiEvtDelta(100);
-  MergeEvt->SetPIDcut("CUT1BLA.root");
-  MergeEvt->SetPIDcut("CUT2BLA.root");
+  MergeEvt->SetOptiEvtDelta(150);//missed few events during the tests with 100
+  MergeEvt->SetGlom(2);
+  MergeEvt->SetTsDelta(1272);
+  //MergeEvt->SetPIDcut("CUT1BLA.root");
+  //MergeEvt->SetPIDcut("CUT2BLA.root");
 
   //Create PSA task
   ATPSATask *psaTask = new ATPSATask();
@@ -122,8 +133,19 @@ void unpack_new(int runNumber=2)
 
 
   std::cout << std::endl << std::endl;
+  std::cout<<" Check MergeTask :: S800 events "<<YELLOW<<MergeEvt->GetS800TsSize()<<RESET<<" AT-TPC events "<<YELLOW<<numEvents<<RESET<<"  Merged TS size "<<YELLOW<<
+    MergeEvt->GetMergedTsSize()<<RESET<<std::endl;
+  if((double)MergeEvt->GetMergedTsSize()/(double)MergeEvt->GetS800TsSize()<1)
+    std::cout<<" ! WARNING Ratio (merged/S800) "<<RED<<(double)MergeEvt->GetMergedTsSize()/(double)MergeEvt->GetS800TsSize()<<RESET<<std::endl;
+  if((double)MergeEvt->GetMergedTsSize()/(double)MergeEvt->GetS800TsSize()==1)
+  std::cout<<" Ratio (merged/S800) "<<GREEN<<(double)MergeEvt->GetMergedTsSize()/(double)MergeEvt->GetS800TsSize()<<RESET<<std::endl;
+  std::cout << std::endl;
   std::cout << "Done unpacking events"  << std::endl << std::endl;
   std::cout << "- Output file : " << outputFile << std::endl << std::endl;
+
+
+  //std::cout << "Done unpacking events"  << std::endl << std::endl;
+  //std::cout << "- Output file : " << outputFile << std::endl << std::endl;
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
   Double_t rtime = timer.RealTime();
