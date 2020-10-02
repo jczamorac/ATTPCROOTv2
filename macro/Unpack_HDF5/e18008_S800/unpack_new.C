@@ -9,6 +9,16 @@
 #define CYAN    "\033[36m\e[1m"
 #define WHITE   "\033[37m"
 
+
+struct auxchannel
+{
+  std::string name;
+  uint8_t cobo;
+  uint8_t asad;
+  uint8_t aget;
+  uint8_t channel;
+};
+
 // Requires the TPC run number
 void unpack_new(int runNumberS800, int runNumberATTPC)
 {
@@ -23,9 +33,12 @@ void unpack_new(int runNumberS800, int runNumberATTPC)
   //Set the input file
   //TString inputFile = TString::Format("hdf5Files/run_%04d.h5", runNumber);
   TString inputFile = TString::Format("/mnt/daqtesting/e18008_attpc_transfer/h5/run_%04d.h5", runNumberATTPC);
+  // TString inputFile = TString::Format("/mnt/simulations/ceclub/giraud/attpc/ATTPCROOTv2/macro/Unpack_HDF5/hdf5Files/run_0002.h5", runNumberATTPC);
 
   //Set the output file
-  TString outputFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_2%03d_%04d.root", runNumberS800, runNumberATTPC);
+  // TString outputFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_2%03d_%04d.root", runNumberS800, runNumberATTPC);
+  TString outputFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_%04d_%04d.root", runNumberS800, runNumberATTPC);
+  // TString outputFile = TString::Format("/projects/ceclub/giraud/attpc/ATTPCROOTv2/macro/Simulation/d2He/Analyis_d2He/merged_run0002_48Ca.root", runNumberS800, runNumberATTPC);
 
   std::cout << "Unpacking AT-TPC run " << runNumberATTPC << " from: " << inputFile << std::endl;
   std::cout << "Saving in: " << outputFile << std::endl;
@@ -58,6 +71,30 @@ void unpack_new(int runNumberS800, int runNumberATTPC)
   parIo1 -> open(digiParFile.Data(), "in");
   rtdb -> setSecondInput(parIo1);
 
+
+  //--------Auxiliary channels
+
+  //Hash table: cobo, asad, aget, channel
+  std::vector<auxchannel> aux_channels;
+  auxchannel ch_1{"mesh",10,0,0,34};
+  aux_channels.push_back(ch_1);
+  auxchannel ch_2{"trigger",10,0,0,0};
+  aux_channels.push_back(ch_2);
+  auxchannel ch_3{"obj_scint",10,0,1,34};
+  aux_channels.push_back(ch_3);
+  auxchannel ch_4{"E1up",10,0,1,0};
+  aux_channels.push_back(ch_4);
+  auxchannel ch_5{"E1down",10,0,2,34};
+  aux_channels.push_back(ch_5);
+  auxchannel ch_6{"obj_tac",10,0,2,0};
+  aux_channels.push_back(ch_6);
+  auxchannel ch_7{"alpha_sig",10,0,3,34};
+  aux_channels.push_back(ch_7);
+  auxchannel ch_8{"unassigned",10,0,3,0};
+  aux_channels.push_back(ch_8);
+   //---------End of auxiliary channel setup
+
+
   //Create the unpacker task
   ATHDFParserTask* HDFParserTask = new ATHDFParserTask();
   HDFParserTask->SetPersistence(kFALSE);//kTRUE // do no write Rawevents
@@ -67,28 +104,54 @@ void unpack_new(int runNumberS800, int runNumberATTPC)
   HDFParserTask->SetTimestampIndex(2);
   HDFParserTask->SetBaseLineSubtraction(kTRUE);
 
+  for(auto iaux : aux_channels){
+    auto hash  = HDFParserTask->CalculateHash(iaux.cobo,iaux.asad,iaux.aget,iaux.channel);
+    auto isaux = HDFParserTask->SetAuxChannel(hash,iaux.name);
+  }
+
  // auto hash = HDFParserTask->CalculateHash(10,0,2,32);
  // HDFParserTask->SetAuxChannel(hash, "IonCb_32");
  // hash = HDFParserTask->CalculateHash(10,0,2,34);
  // HDFParserTask->SetAuxChannel(hash, "IonCb_34");
 
 
-  //TString S800File = TString::Format("../Simulation/d2He/Analyis_d2He/rootS800/raw/test-runs800-48Ca-RAW-%04d.root", runNumber);
-  //TString S800File = "/mnt/simulations/ceclub/giraud/attpc/ATTPCROOTv2/macro/Simulation/d2He/Analyis_d2He/rootS800/cal/test-runs800-48Ca-CAL-0001.root";
-  TString S800File = TString::Format("/mnt/analysis/e18008/rootS800/cal/run-2%03d-00.root", runNumberS800);
+
+ // Double_t x0_corr_tof = 0.101259;
+ // Double_t afp_corr_tof = 1177.02;
+ // Double_t afp_corr_dE = 61.7607;
+ // Double_t x0_corr_dE = -0.0403;
+ // Double_t rf_offset = 0.0;
+ // Double_t corrGainE1up = 0.6754;
+ // Double_t corrGainE1down = 1.;
+
+  std::vector<Double_t> S800par;
+  S800par.push_back(0.);//x0_corr_tof
+  S800par.push_back(0.);//afp_corr_tof
+  S800par.push_back(0.);//afp_corr_dE
+  S800par.push_back(0.);//x0_corr_dE
+  S800par.push_back(0.);//rf_offset
+  S800par.push_back(1.);//corrGainE1up
+  S800par.push_back(1.);//corrGainE1down
+  // TString S800File = "/projects/ceclub/giraud/s800root_jorge/s800root/files/rootFiles/cal/test-runs800-48Ca-CAL-0001-new.root";
+  // TString S800File = TString::Format("/mnt/analysis/e18008/rootS800/cal/run-2%03d-00.root", runNumberS800);
+  TString S800File = TString::Format("/mnt/analysis/e18008/rootS800/cal/run-%04d-00.root", runNumberS800);
   ATMergeTask *MergeEvt = new ATMergeTask();
   MergeEvt->SetS800File(S800File);
   MergeEvt->SetPersistence(kTRUE);
-  MergeEvt->SetOptiEvtDelta(150);//missed few events during the tests with 100
+  // MergeEvt->SetOptiEvtDelta(150);//old way with fit, //missed few events during the tests with 100
+  MergeEvt->SetOptiEvtDelta(5);
   MergeEvt->SetGlom(2);
-  MergeEvt->SetTsDelta(1272);
-  //MergeEvt->SetPIDcut("CUT1BLA.root");
-  //MergeEvt->SetPIDcut("CUT2BLA.root");
+  MergeEvt->SetTsDelta(1192);//run60//61
+  //MergeEvt->SetTsDelta(792);run59/has to be adjusted, function of the drift velocity
+  //MergeEvt->SetTsDelta(1272);//has to be adjusted, function of the drift velocity
+  MergeEvt->SetPID1cut("rootPID/XfObjObjNew.root");//can have multiple gates for PID1
+  MergeEvt->SetPID2cut("rootPID/ICSumObjNew2.root");//can have multiple gates for PID2
+  MergeEvt->SetParameters(S800par);
 
   //Create PSA task
   ATPSATask *psaTask = new ATPSATask();
   psaTask -> SetPersistence(kTRUE);//kFALSE
-  psaTask -> SetThreshold(50);
+  psaTask -> SetThreshold(40);//50
   psaTask -> SetPSAMode(1); //NB: 1 is ATTPC - 2 is pATTPC - 3 Filter for ATTPC - 4: Full Time Buckets
   psaTask -> SetMaxFinder();
 
@@ -106,10 +169,10 @@ void unpack_new(int runNumberS800, int runNumberATTPC)
   //RandTask ->SetModelType(1);
   //RandTask ->SetFullMode();
   RandTask->SetTiltAngle(0.0);
-  RandTask->SetDistanceThreshold(15.0);
-  RandTask->SetMinHitsLine(7);
+  RandTask->SetDistanceThreshold(12.0);//15.
+  RandTask->SetMinHitsLine(50);//7
   RandTask->SetAlgorithm(3); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
-  RandTask->SetRanSamMode(3);// 0=Uniform; 1=Gaussian; 2=Weighted; 3=Gaussian+Weighted
+  RandTask->SetRanSamMode(0);// 0=Uniform; 1=Gaussian; 2=Weighted; 3=Gaussian+Weighted
 
 
 
@@ -128,8 +191,8 @@ void unpack_new(int runNumberS800, int runNumberATTPC)
   std::cout << "Unpacking " << numEvents << " events. " << std::endl;
 
   //return;
-  run->Run(0,numEvents);
-  //run->Run(0,7);
+  //run->Run(0,numEvents);
+  run->Run(0,10);
 
 
   std::cout << std::endl << std::endl;

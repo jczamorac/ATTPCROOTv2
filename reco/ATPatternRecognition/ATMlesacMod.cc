@@ -25,6 +25,7 @@ ATMlesacMod::ATMlesacMod()
   fVertex_2.SetXYZ(-10000,-10000,-10000);
   fVertexTime = -1000.0;
   fMinimum = -1.0;
+  fChargeThres = 0;
 }
 
 ATMlesacMod::~ATMlesacMod()
@@ -45,6 +46,7 @@ void ATMlesacMod::Init(ATEvent *event)
       ATHit hit = hitArray->at(iHit);
       TVector3 position = hit.GetPosition();
       Double_t tq = hit.GetCharge();
+      if(tq<fChargeThres) continue;
       vX.push_back(position.X()); //in cm
       vY.push_back(position.Y()); //in cm
       vZ.push_back(position.Z()); //in cm
@@ -137,8 +139,11 @@ vector<int> ATMlesacMod::RandSam(vector<int> indX, Int_t mode)
   if(mode==2){
     //-------Weighted sampling
     bool cond = false;
+    int counter = 0;
     p1=(int)(gRandom->Uniform(0,pclouds));
     do{
+      counter++;
+      if(counter>30 && p2!=p1) break;
       p2=(int)(gRandom->Uniform(0,pclouds));
       cond = false;
       double TwiceAvCharge = 2*GetAvCharge();
@@ -526,7 +531,7 @@ void ATMlesacMod::FindVertex(std::vector<ATTrack*> tracks)
                                 TVector3 meanVer = vertexbuff;
                                 double radius = sqrt(vertexbuff.X()*vertexbuff.X() + vertexbuff.Y()*vertexbuff.Y());
 
-                                if(vertexbuff.Z()>0 && vertexbuff.Z()<1000 && radius<50.0){
+                                if(vertexbuff.Z()>0 && vertexbuff.Z()<1000 /*&& radius<50.0*/){
 
                                   track->SetTrackVertex(vertexbuff);
                                   track_f->SetTrackVertex(vertexbuff);

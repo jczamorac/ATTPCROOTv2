@@ -23,6 +23,8 @@ class ATRansacTask : public FairTask {
     ATRansacTask();
     ~ATRansacTask();
 
+
+    void SetIsReprocess(Bool_t value = kFALSE);
     void SetPersistence(Bool_t value = kTRUE);
     void SetModelType(int model);
     void SetDistanceThreshold(Float_t threshold);
@@ -32,6 +34,7 @@ class ATRansacTask : public FairTask {
     void SetTiltAngle(Double_t val);
     void SetAlgorithm(Int_t val);
     void SetRanSamMode(Int_t mode);
+    void SetChargeThreshold(Double_t value);
 
     virtual InitStatus Init();
     virtual void SetParContainers();
@@ -42,9 +45,11 @@ class ATRansacTask : public FairTask {
     ATDigiPar *fPar;
     TClonesArray *fEventHArray;
     TClonesArray *fRansacArray;
+    TClonesArray *fS800CalcBr;
 
     ATEvent *fEvent;
 
+    Bool_t kIsReprocess;
     Bool_t kIsPersistence;
     Bool_t kIsFullMode;
     int fRANSACModel;
@@ -54,6 +59,7 @@ class ATRansacTask : public FairTask {
     Int_t fNumItera;
     Int_t fRANSACAlg;
     Int_t fRandSamplMode;
+    Double_t fCharThres;
 
 
 

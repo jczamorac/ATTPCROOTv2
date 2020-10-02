@@ -82,6 +82,7 @@ class ATMlesacMod : public TObject
       std::vector<ATTrack> GetTrackCand(){return fTrackCand;};
       TVector3 ClosestPoint2Lines(TVector3 d1, TVector3 pt1, TVector3 d2, TVector3 pt2);
       void SetRanSamMode(Int_t mode){fRandSamplMode = mode;};
+      void SetChargeThres(double value){fChargeThres = value;};
 
       struct Cluster // return type of structure
         {
@@ -131,7 +132,7 @@ class ATMlesacMod : public TObject
 	    double fTotalCharge;
 	    int fVerbose;
       double Avcharge;
-
+      double fChargeThres;
 
 
 

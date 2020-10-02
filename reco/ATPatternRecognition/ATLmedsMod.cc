@@ -18,13 +18,14 @@ ATLmedsMod::ATLmedsMod()
   fLmedsMaxIteration = 500;
 	fLmedsMinPoints = 30;
 	fLmedsThreshold = 15;
-  fLineDistThreshold = 6.0;
+  fLineDistThreshold = 10.0;
   fRandSamplMode = 0;
 
   fVertex_1.SetXYZ(-10000,-10000,-10000);
   fVertex_2.SetXYZ(-10000,-10000,-10000);
   fVertexTime = -1000.0;
   fMinimum = -1.0;
+  fChargeThres = 0;
 }
 
 ATLmedsMod::~ATLmedsMod()
@@ -45,6 +46,7 @@ void ATLmedsMod::Init(ATEvent *event)
       ATHit hit = hitArray->at(iHit);
       TVector3 position = hit.GetPosition();
       Double_t tq = hit.GetCharge();
+      if(tq<fChargeThres) continue;
       vX.push_back(position.X()); //in cm
       vY.push_back(position.Y()); //in cm
       vZ.push_back(position.Z()); //in cm
@@ -138,8 +140,11 @@ vector<int> ATLmedsMod::RandSam(vector<int> indX, Int_t mode)
   if(mode==2){
     //-------Weighted sampling
     bool cond = false;
+    int counter = 0;
     p1=(int)(gRandom->Uniform(0,pclouds));
     do{
+      counter++;
+      if(counter>30 && p2!=p1) break;
       p2=(int)(gRandom->Uniform(0,pclouds));
       cond = false;
       double TwiceAvCharge = 2*GetAvCharge();

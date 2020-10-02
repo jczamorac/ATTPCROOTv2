@@ -82,7 +82,7 @@ class ATRansacMod : public TObject
       TVector3 GetVertexMean(){return fVertex_mean;};
       std::vector<ATTrack> GetTrackCand(){return fTrackCand;};
       TVector3 ClosestPoint2Lines(TVector3 d1, TVector3 pt1, TVector3 d2, TVector3 pt2);
-
+      void SetChargeThres(double value){fChargeThres = value;};
 
       struct Cluster // return type of structure
         {
@@ -132,7 +132,7 @@ class ATRansacMod : public TObject
 	    double fTotalCharge;
 	    int fVerbose;
       double Avcharge;
-
+      double fChargeThres;
 
 
 
