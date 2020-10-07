@@ -109,6 +109,7 @@ class ATLmedsMod : public TObject
   protected:
 
       void FindVertex(std::vector<ATTrack*> tracks);
+      void FindVertexOneTrack(std::vector<ATTrack*> tracks);
 
       vector<double> errorsVec;
       TVector3 fVertex_1;

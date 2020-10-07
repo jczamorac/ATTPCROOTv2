@@ -24,12 +24,12 @@ void re_process()
   //Set the input file
   //TString inputFile = TString::Format("hdf5Files/run_%04d.h5", runNumber);
   //TString inputFile = TString::Format("/mnt/daqtesting/e18008_attpc_transfer/h5/run_%04d.h5", runNumberATTPC);
-  TString inputFile = "/home/juan/NSCL/run_2060_0060.root";
+  TString inputFile = "/home/juan/NSCL/run_2082_0082.root";
   // TString inputFile = TString::Format("/mnt/simulations/ceclub/giraud/attpc/ATTPCROOTv2/macro/Unpack_HDF5/hdf5Files/run_0002.h5", runNumberATTPC);
 
   //Set the output file
   // TString outputFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_2%03d_%04d.root", runNumberS800, runNumberATTPC);
-  TString outputFile = "salida_ran.root";
+  TString outputFile = "salida_ran_82.root";
   // TString outputFile = TString::Format("/projects/ceclub/giraud/attpc/ATTPCROOTv2/macro/Simulation/d2He/Analyis_d2He/merged_run0002_48Ca.root", runNumberS800, runNumberATTPC);
 
   //std::cout << "Unpacking AT-TPC run " << runNumberATTPC << " from: " << inputFile << std::endl;

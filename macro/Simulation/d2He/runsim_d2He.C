@@ -4,10 +4,10 @@ void runsim_d2He(Int_t nEvents = 2000, TString mcEngine = "TGeant4")
   TString dir = getenv("VMCWORKDIR");
 
   // Output file name
-  TString outFile ="outputFiles/attpcsim_d2He.root";
+  TString outFile ="outputFiles/attpcsim_d2He_300.root";
 
   // Parameter file name
-  TString parFile="outputFiles/attpcpar_d2He.root";
+  TString parFile="outputFiles/attpcpar_d2He_300.root";
 
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
@@ -44,7 +44,7 @@ void runsim_d2He(Int_t nEvents = 2000, TString mcEngine = "TGeant4")
   run->AddModule(pipe);*/
 
   FairDetector* ATTPC = new AtTpc("ATTPC", kTRUE);
-  ATTPC->SetGeometryFileName("ATTPC_d2He_07atm.root");
+  ATTPC->SetGeometryFileName("ATTPC_d2He_03atm.root");
   //ATTPC->SetModifyGeometry(kTRUE);
   run->AddModule(ATTPC);
 
@@ -89,8 +89,9 @@ void runsim_d2He(Int_t nEvents = 2000, TString mcEngine = "TGeant4")
   Double_t angularDiv= 10.E-3;//rad, angular divergence of the beam
   Double_t zFocus=50.;//cm, z position (beam direction) of the beam spot
 
-  ATTPCIonGenerator* ionGen = new ATTPCIonGenerator("Ion",z,a,q,m,px,py,pz,BExcEner,Bmass,NomEnergy,kBeam,
-        fwhmFocus,angularDiv,zFocus);
+  //ATTPCIonGenerator* ionGen = new ATTPCIonGenerator("Ion",z,a,q,m,px,py,pz,BExcEner,Bmass,NomEnergy,kBeam,
+    //    fwhmFocus,angularDiv,zFocus);
+    ATTPCIonGenerator* ionGen = new ATTPCIonGenerator("Ion",z,a,q,m,px,py,pz,BExcEner,Bmass,NomEnergy,kBeam);
   //ionGen->SetSpotRadius(0,-100,0);
   // add the ion generator
 

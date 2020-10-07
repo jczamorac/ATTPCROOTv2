@@ -68,7 +68,7 @@ void ATTrack::SetGeoQEnergy(Double_t qenergy)                       { fGeoQEnerg
 void ATTrack::SetIsNoise(Bool_t value)                              { kIsNoise = value;}
 void ATTrack::SetRANSACCoeff(std::vector<Double_t> par)             { fRANSACCoeff = par;}
 void ATTrack::SetGeoCenter(std::pair<Double_t,Double_t> center)     { fGeoCenter = center; }
-void ATTrack::SetGeoRadius(Double_t radius)                         { fGeoRadius = radius;}  
+void ATTrack::SetGeoRadius(Double_t radius)                         { fGeoRadius = radius;}
 
 std::vector<ATHit> *ATTrack::GetHitArray()                          { return &fHitArray;}
 std::vector<Double_t> ATTrack::GetFitPar()                          { return fParFit;}
@@ -104,9 +104,9 @@ std::vector<Double_t> ATTrack::GetPosZBack() const                  { return fPo
 
 
 TVector3 ATTrack::GetLastPoint()
-{ 
-	Double_t maxR = 0.; 
-        TVector3 maxPos,temp; 
+{
+	Double_t maxR = 0.;
+        TVector3 maxPos,temp;
         for(Int_t nHit = 0;nHit < fHitArray.size();nHit++){
         	temp = fHitArray.at(nHit).GetPosition();
                	if(sqrt(pow(temp.X(),2) + pow(temp.Y(),2))>maxR){
@@ -139,7 +139,8 @@ std::pair<Double_t,Double_t> ATTrack::GetThetaPhi(const TVector3 &vertex, const 
 	std::pair<Double_t,Double_t> thetaPhi;
         if(fParFit.size()>0){
 
-                TVector3 vp(TMath::Sign(1,maxPos.X())*fabs(fParFit[1]),TMath::Sign(1,maxPos.Y())*fabs(fParFit[3]),-TMath::Sign(1,(maxPos.Z()-vertex.Z()))*fabs(fParFit[5]));
+      //TVector3 vp(TMath::Sign(1,maxPos.X())*fabs(fParFit[1]),TMath::Sign(1,maxPos.Y())*fabs(fParFit[3]),-TMath::Sign(1,(maxPos.Z()-vertex.Z()))*fabs(fParFit[5]));
+      TVector3 vp(TMath::Sign(1,maxPos.X())*fabs(fParFit[1]),TMath::Sign(1,maxPos.Y())*fabs(fParFit[3]),TMath::Sign(1,(maxPos.Z()-vertex.Z()))*fabs(fParFit[5]));
 //		std::cout<<" fParFit "<<fParFit[1]<<" "<<fParFit[3]<<" "<<fParFit[5]<<std::endl;
 //		std::cout<<" maxPos "<<maxPos.X()<<" "<<maxPos.Y()<<" "<<maxPos.Z()<<std::endl;
 

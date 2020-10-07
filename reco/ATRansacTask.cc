@@ -26,6 +26,7 @@ ATRansacTask::ATRansacTask()
   fRANSACAlg = 0;
   fRandSamplMode = 0;
   fCharThres = 0;
+  kIsReprocess = kFALSE;
 
 }
 

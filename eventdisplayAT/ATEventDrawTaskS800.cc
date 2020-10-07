@@ -370,7 +370,7 @@ ATEventDrawTaskS800::DrawS800()
     vector<Float_t> S800_timeMTDCXf = fS800Calc->GetMultiHitTOF()->GetMTDCXf();
     Float_t S800_timeObjSelect=-999;
     Float_t S800_timeXfSelect=-999;
-     
+
     for(int k=0; k<S800_timeMTDCXf.size(); k++){
     	if(S800_timeMTDCXf.at(k)>150 && S800_timeMTDCXf.at(k)<315) S800_timeXfSelect=S800_timeMTDCXf.at(k);
     }
@@ -384,8 +384,8 @@ ATEventDrawTaskS800::DrawS800()
     	XfObj_tof=S800_timeXfSelect-S800_timeObjSelect;
 	CondMTDCXfObj=1;
     }
-    Double_t S800_ICSum = fS800Calc->GetIC()->GetSum();    
-//----------- New 10/01 -------------------------------------    
+    Double_t S800_ICSum = fS800Calc->GetIC()->GetSum();
+//----------- New 10/01 -------------------------------------
 
     Double_t S800_x0 = fS800Calc->GetCRDC(0)->GetXfit();
     Double_t S800_x1 = fS800Calc->GetCRDC(1)->GetXfit();
@@ -406,12 +406,12 @@ ATEventDrawTaskS800::DrawS800()
 
     std::cout<<"draw func in cut "<<S800_timeObjSelect<<" "<<XfObj_tof<<" "<<S800_ICSum<<std::endl;
 
-//----------- New 10/01 ------------------------------------- 
+//----------- New 10/01 -------------------------------------
     //fPID->Fill(S800_tofCorr,S800_dECorr);
 	if(CondMTDCXfObj)fPID->Fill(S800_timeObjSelect,XfObj_tof);
     //fPID2->Fill(S800_tofCorr,XfObj_tof);
 	if(CondMTDCObj)fPID2->Fill(S800_timeObjSelect,S800_ICSum);
-//----------- New 10/01 ------------------------------------- 
+//----------- New 10/01 -------------------------------------
 
   }
 
@@ -550,37 +550,40 @@ ATEventDrawTaskS800::DrawHitPoints()
             if(fRANSACAlg==1){
               fRansacMod = dynamic_cast<ATRansacMod*> (fRansacArray->At(0));
               TrackCand = fRansacMod->GetTrackCand();
-              TVector3 Vertex1    = fRansacMod->GetVertex1();
+              /*TVector3 Vertex1    = fRansacMod->GetVertex1();
               TVector3 Vertex2    = fRansacMod->GetVertex2();
               Double_t VertexTime = fRansacMod->GetVertexTime();
               std::cout<<cGREEN<<" Vertex 1 - X : "<<Vertex1.X()<<" - Y : "<<Vertex1.Y()<<"  - Z : "<<Vertex1.Z()<<std::endl;
               std::cout<<" Vertex 2 - X : "<<Vertex2.X()<<" - Y : "<<Vertex2.Y()<<"  - Z : "<<Vertex2.Z()<<std::endl;
               std::cout<<" Vertex Time : "<<VertexTime<<std::endl;
               std::cout<<" Vertex Mean - X : "<<(Vertex1.X()+Vertex2.X())/2.0<<" - Y : "<<(Vertex1.Y()+Vertex2.Y())/2.0<<"  - Z : "<<(Vertex1.Z()+Vertex2.Z())/2.0<<cNORMAL<<std::endl;
+              */
             }
 
             if(fRANSACAlg==2){
               fMlesacMod = dynamic_cast<ATMlesacMod*> (fRansacArray->At(0));
               TrackCand = fMlesacMod->GetTrackCand();
-              TVector3 Vertex1    = fMlesacMod->GetVertex1();
+              /*TVector3 Vertex1    = fMlesacMod->GetVertex1();
               TVector3 Vertex2    = fMlesacMod->GetVertex2();
               Double_t VertexTime = fMlesacMod->GetVertexTime();
               std::cout<<cGREEN<<" Vertex 1 - X : "<<Vertex1.X()<<" - Y : "<<Vertex1.Y()<<"  - Z : "<<Vertex1.Z()<<std::endl;
               std::cout<<" Vertex 2 - X : "<<Vertex2.X()<<" - Y : "<<Vertex2.Y()<<"  - Z : "<<Vertex2.Z()<<std::endl;
               std::cout<<" Vertex Time : "<<VertexTime<<std::endl;
               std::cout<<" Vertex Mean - X : "<<(Vertex1.X()+Vertex2.X())/2.0<<" - Y : "<<(Vertex1.Y()+Vertex2.Y())/2.0<<"  - Z : "<<(Vertex1.Z()+Vertex2.Z())/2.0<<cNORMAL<<std::endl;
+              */
             }
 
             if(fRANSACAlg==3){
               fLmedsMod = dynamic_cast<ATLmedsMod*> (fRansacArray->At(0));
               TrackCand = fLmedsMod->GetTrackCand();
-              TVector3 Vertex1    = fLmedsMod->GetVertex1();
+              /*TVector3 Vertex1    = fLmedsMod->GetVertex1();
               TVector3 Vertex2    = fLmedsMod->GetVertex2();
               Double_t VertexTime = fLmedsMod->GetVertexTime();
               std::cout<<cGREEN<<" Vertex 1 - X : "<<Vertex1.X()<<" - Y : "<<Vertex1.Y()<<"  - Z : "<<Vertex1.Z()<<std::endl;
               std::cout<<" Vertex 2 - X : "<<Vertex2.X()<<" - Y : "<<Vertex2.Y()<<"  - Z : "<<Vertex2.Z()<<std::endl;
               std::cout<<" Vertex Time : "<<VertexTime<<std::endl;
               std::cout<<" Vertex Mean - X : "<<(Vertex1.X()+Vertex2.X())/2.0<<" - Y : "<<(Vertex1.Y()+Vertex2.Y())/2.0<<"  - Z : "<<(Vertex1.Z()+Vertex2.Z())/2.0<<cNORMAL<<std::endl;
+              */
             }
 
 
@@ -697,8 +700,19 @@ ATEventDrawTaskS800::DrawHitPoints()
                 TVector3 tLeng = LastPoint - tvertex;
                 Double_t tLength = tLeng.Mag();
                 fLvsTheta->Fill(tTheta,tLength);
+                //multiple vertex per event
+                fVertex = new TEvePointSet(TString::Format("Vertex%d", j),1, TEvePointSelectorConsumer::kTVT_XYZ);
+                fVertex -> SetOwnIds(kTRUE);
+          	    fVertex -> SetMarkerStyle(34);
+          	    fVertex -> SetMarkerSize(2.0);
+                fVertex -> SetMarkerColor(kViolet);
+                fVertex -> SetNextPoint(tvertex.X()*0.1, tvertex.Y()*0.1, tvertex.Z()*0.1);
+                fVVertex.push_back(fVertex);
+                std::cout<<cGREEN<<" Vertex"<< j<<" - X : "<<tvertex.X()<<" - Y : "<<tvertex.Y()<<"  - Z : "<<tvertex.Z()<<cNORMAL<<std::endl;
 
             }
+            //one vertex per event
+            /*
 	    fVertex = new TEvePointSet("Vertex",1, TEvePointSelectorConsumer::kTVT_XYZ);
 	    fVertex -> SetOwnIds(kTRUE);
 	    fVertex -> SetMarkerStyle(34);
@@ -708,7 +722,7 @@ ATEventDrawTaskS800::DrawHitPoints()
       if(fRANSACAlg==1) fVertex -> SetNextPoint(fRansacMod -> GetVertexMean().x()*0.1, fRansacMod -> GetVertexMean().y()*0.1, fRansacMod -> GetVertexMean().z()*0.1);
       if(fRANSACAlg==2) fVertex -> SetNextPoint(fMlesacMod -> GetVertexMean().x()*0.1, fMlesacMod -> GetVertexMean().y()*0.1, fMlesacMod -> GetVertexMean().z()*0.1);
       if(fRANSACAlg==3) fVertex -> SetNextPoint(fLmedsMod -> GetVertexMean().x()*0.1, fLmedsMod -> GetVertexMean().y()*0.1, fLmedsMod -> GetVertexMean().z()*0.1);
-
+      */
         }
 
 
@@ -973,7 +987,8 @@ ATEventDrawTaskS800::DrawHitPoints()
             //Lines plto together with data points
             gEve -> AddElement(fHitSet);
             gEve -> AddElement(fhitBoxSet);
-	    if(fVertex) gEve -> AddElement(fVertex);
+            for(int w=0;w<fVVertex.size();w++) gEve -> AddElement(fVVertex.at(w));
+	          //if(fVertex) gEve -> AddElement(fVertex);
         }
 
         if(fPatternEventArray)
@@ -1266,12 +1281,21 @@ ATEventDrawTaskS800::Reset()
              fLine->Reset();
              gEve -> RemoveElement(fLine,fEventManager);
              }*/
-            if(fVertex)
+             //on vertex
+            /*if(fVertex)
             {
               //fVertex->Reset();
               gEve -> RemoveElement(fVertex, fEventManager);
 	      fVertex = nullptr;
-            }
+          }*/
+          //multiple vertex
+          if(fVVertex.size()>0)
+          {
+            //fVertex->Reset();
+            for(int w=0;w<fVVertex.size();w++) gEve -> RemoveElement(fVVertex.at(w), fEventManager);
+            fVertex = nullptr;
+            fVVertex.clear();
+        }
 
 
 

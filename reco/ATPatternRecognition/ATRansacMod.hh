@@ -108,6 +108,7 @@ class ATRansacMod : public TObject
   protected:
 
       void FindVertex(std::vector<ATTrack*> tracks);
+      void FindVertexOneTrack(std::vector<ATTrack*> tracks);
 
 
       TVector3 fVertex_1;

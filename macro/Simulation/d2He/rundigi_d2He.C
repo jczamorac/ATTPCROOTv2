@@ -1,9 +1,9 @@
 void rundigi_d2He
-(TString mcFile = "outputFiles/attpcsim_d2He.root",//attpcsim_d2He_14O_07atm_100000.root
+(TString mcFile = "outputFiles/attpcsim_d2He_1e3pps.root",//attpcsim_d2He_14O_07atm_100000.root
 //(TString mcFile = "outputFiles/attpcsim_d2He_1e6pps.root",//attpcsim_d2He_14O_07atm_100000.root
 TString digiParFile = "../../../parameters/ATTPC.d2He.par",
 TString mapParFile = "../../../scripts/Lookup20150611.xml",
-TString parFile = "outputFiles/attpcpar_d2He.root")    //"attpcpar_d2He_test_10k.root")//attpcpar_d2He_14O_07atm_100000.root
+TString parFile = "outputFiles/attpcpar_d2He_1e3pps.root")    //"attpcpar_d2He_test_10k.root")//attpcpar_d2He_14O_07atm_100000.root
 //TString parFile = "outputFiles/attpcpar_d2He_1e6pps.root")    //"attpcpar_d2He_test_10k.root")//attpcpar_d2He_14O_07atm_100000.root
 //TString trigParFile = "../../../parameters/AT.trigger.par")
 {
@@ -33,7 +33,7 @@ TString parFile = "outputFiles/attpcpar_d2He.root")    //"attpcpar_d2He_test_10k
   FairRunAna* fRun = new FairRunAna();
   fRun -> SetInputFile(mcFile);
   //fRun -> SetOutputFile("outputFiles/attpcdigi_d2He_"+str_nEvents+".root");
-  fRun -> SetOutputFile("outputFiles/attpcdigi_d2He_"+str_nEvents+"_ran.root");
+  fRun -> SetOutputFile("outputFiles/attpcdigi_d2He_700.root");
   //fRun -> SetOutputFile("outputFiles/attpcdigi_d2He_1e6pps_lmed.root");
 
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
@@ -81,9 +81,9 @@ TString parFile = "outputFiles/attpcpar_d2He.root")    //"attpcpar_d2He_test_10k
   //RandTask ->SetModelType(1);
   //RandTask ->SetFullMode();
   RandTask->SetTiltAngle(0.0);
-  RandTask->SetDistanceThreshold(15.0);
+  RandTask->SetDistanceThreshold(12.0);
   RandTask->SetMinHitsLine(7);
-  RandTask->SetAlgorithm(1); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
+  RandTask->SetAlgorithm(3); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
   RandTask->SetRanSamMode(3);// 0=Uniform; 1=Gaussian; 2=Weighted; 3=Gaussian+Weighted
 
 

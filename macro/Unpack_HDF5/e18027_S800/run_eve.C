@@ -36,7 +36,7 @@ void run_eve(int runNumberS800=2060, int runNumberATTPC=60){
   eve->SetSaveTextData();
   //eve->UnpackHoughSpace();
   // eve->SetAlgorithm(3); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
-  eve->SetAlgorithm(1); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
+  eve->SetAlgorithm(3); // 0=PCL ransac; 1=Homemade Ransac; 2=Homemade Mlesac; 3=Homemade Lmeds;
 
   eveMan->AddTask(eve);
   eveMan->Init();

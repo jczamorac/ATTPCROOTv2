@@ -4,19 +4,14 @@
 
 TGraph *graphtable;
 
-//change the Ekin_proj to the correct value,
-//check the energy loss function
-//check calibration/correction coef on the dE, and ToF S800.
-//Is the referential of the experimental setup really what we use in simulation? If plots make no sens first check that
 
 
-static Double_t proton_mass = 1.0078250322 * 931.494;
-static Double_t proj_mass = 14.008596359 * 931.494;
-static Double_t target_mass = 2.01410177812 * 931.494;
-static Double_t recoil_mass = 14.00307400443 * 931.494;
-static Double_t he2_mass = 2.0 * proton_mass;
-static Double_t Ekin_proj = 115.0 * 14.008596359;//100.0
-//static Double_t Ekin_proj = 110.0 * 14.008596359;//100.0
+static Double_t proj_mass = 69.936431555 * 931.494;
+static Double_t target_mass = 4.00260325413 * 931.494;
+static Double_t recoil_mass = 4.00260325413 * 931.494;
+static Double_t ejectile_mass = 69.936431555 * 931.494;
+static Double_t Ekin_proj = 68.0 * 70;//100.0
+
 
 
 static Double_t corrGainE1up = 1.;
@@ -98,7 +93,7 @@ void SetERtable(){//fit of the GEANT4 E vs R obtained from the simulation with t
 	}
 
 
-void analysis_reprocess()
+void analysis_reprocessOnetrack()
 	{
 
 		SetERtable();
@@ -140,24 +135,17 @@ void analysis_reprocess()
 
 		outfile   = TFile::Open(outFileNameHead.Data(),"recreate");
 
-		outfile->cd();
-  	outfile->mkdir("Bragg");
 
 		TH1F* scatteringAngle = new TH1F("scatteringAngle","scatteringAngle",1000,0,200);
 		TH1F* energy = new TH1F("enegy","energy",100,0,40);
 		TH2F* ang_vs_energy = new TH2F("ang_vs_energy","ang_vs_energy,",100,0,200,100,0,40);
 		//TH2D *tracks_z_r = new TH2D ("tracks_z_r", "ZvsR", 500, -100, 1000, 500, 0, 300);
 		//TH2D *tracks_x_y = new TH2D ("tracks_x_y", "XvsY", 500, -300, 300, 500, -300, 300);
-		TH1D *theta_r_he2_reco = new TH1D ("theta_r_he2_reco", "theta 2He", 1800, 0, 180);
-		TH1D *kin_r_he2_reco = new TH1D ("kin_r_he2_reco", "Energy 2He", 100, 0, 5);
-		TH1D *phi_r_he2_reco = new TH1D ("phi_r_he2_reco", "phi 2He", 3600, -180, 180);
-		TH2D *theta_kin_he2_reco = new TH2D ("theta_kin_he2_reco", "Kin vs Theta 2He", 1800, 0, 180, 100, 0, 5);
-		TH1D *thetacm_he2_reco = new TH1D ("thetacm_he2_reco", "thetacm_he2", 200, 0, 20);
-		TH1D *Ex_reco = new TH1D ("Ex_reco", "Ex_reco", 350, -5, 30);
-		TH2D *thetacm_Ex_he2_reco = new TH2D ("thetacm_Ex_he2_reco", "thetacm_Ex_he2", 200, 0, 20, 350, -5, 30);
-		TH1D *ex_he2_reco = new TH1D ("ex_he2_reco", "ex_he2", 100, 0, 10);
-		TH1D *epsilon_pp_reco = new TH1D ("epsilon_pp_reco", "#epsilon_{pp}", 100, 0, 10);
-		TH2D *thetacm_epsilon_pp_reco = new TH2D ("thetacm_epsilon_pp_reco", "#theta_{cm} #epsilon_{pp} #^{2}He", 200, 0, 20, 100, 0, 10);
+		TH1F* thetacm = new TH1F("thetacm","thetacm",100,0,20);
+		TH1F* Ex_reco = new TH1F("Ex","Ex",400,-20,20);
+		TH2D *thetacm_Ex = new TH2D ("thetacm_Ex", "thetacm_Ex", 200, 0, 20, 700, -30, 30);
+		TH2D *theta_range = new TH2D ("theta_range", "theta_range", 180, 0, 180, 250, 0, 600);
+		TH2D *theta_kin = new TH2D ("theta_kin", "theta_kin", 180, 0, 180, 250, 0, 4);
 		//----- S800
 
 		// TH2D *tof_dE = new TH2D ("tof_dE", "tof_dE", 250, 1000, 1500, 250, 0, 500);//PID
@@ -167,8 +155,7 @@ void analysis_reprocess()
 		TH2D *x_y_crdc1 = new TH2D ("x_y_crdc1", "x_dy_crdc1", 300, -300, 300, 150, -150, 150);//positions crdc1
 		TH2D *x_y_crdc2 = new TH2D ("x_y_crdc2", "x_dy_crdc2", 300, -300, 300, 150, -150, 150);//positions crdc2
 
-		TH1D *hBr0;
-		TH1D *hBr1;
+
 		//-----
 		Int_t ivt = 0,ivt_same=0;
 		Double_t range_p1 = 0.,range_p2 =0.;
@@ -194,32 +181,18 @@ void analysis_reprocess()
 
 		anatree->Branch("ivt",&ivt);
 		anatree->Branch("range_p1",&range_p1);
-		anatree->Branch("range_p2",&range_p2);
 		anatree->Branch("theta1",&theta1);
-		anatree->Branch("theta2",&theta2);
 		anatree->Branch("phi1",&phi1);
-		anatree->Branch("phi2",&phi2);
 		anatree->Branch("lastX1",&lastX1);
 		anatree->Branch("lastY1",&lastY1);
 		anatree->Branch("lastZ1",&lastZ1);
-		anatree->Branch("lastX2",&lastX2);
-		anatree->Branch("lastY2",&lastY2);
-		anatree->Branch("lastZ2",&lastZ2);
 		anatree->Branch("vertexX",&vertexX);
 		anatree->Branch("vertexY",&vertexY);
 		anatree->Branch("vertexZ",&vertexZ);
-		anatree->Branch("angle12",&angle12);
 		anatree->Branch("eLoss_p1_reco",&eLoss_p1_reco);
-		anatree->Branch("eLoss_p2_reco",&eLoss_p2_reco);
-		anatree->Branch("kin_He2",&kin_He2);
-		anatree->Branch("theta_He2",&theta_He2);
-		anatree->Branch("E_tot_he2",&E_tot_he2);
-		anatree->Branch("he2_mass_ex",&he2_mass_ex);
 		anatree->Branch("theta_cm",&theta_cm);
 		anatree->Branch("Ex4",&Ex4);
-		anatree->Branch("epsilon_pp",&epsilon_pp);
-		anatree->Branch("mom1_norm_reco",&mom1_norm_reco);
-		anatree->Branch("mom2_norm_reco",&mom2_norm_reco);
+
 		//----- S800
 		anatree->Branch("S800_timeStamp",&S800_timeStamp,"S800_timeStamp/l");
 		anatree->Branch("S800_timeRf",&S800_timeRf);
@@ -279,9 +252,9 @@ void analysis_reprocess()
 
 
 			// ATRANSACN::ATRansac* fATRansac  = dynamic_cast<ATRANSACN::ATRansac*> (ransacArray->At(0));
-		   ATRansacMod* fATRansac  = dynamic_cast<ATRansacMod*> (ransacArray->At(0));
+		   //ATRansacMod* fATRansac  = dynamic_cast<ATRansacMod*> (ransacArray->At(0));
 		  //ATMlesacMod* fATRansac  = dynamic_cast<ATMlesacMod*> (ransacArray->At(0));
-		  //ATLmedsMod* fATRansac  = dynamic_cast<ATLmedsMod*> (ransacArray->At(0));
+		  ATLmedsMod* fATRansac  = dynamic_cast<ATLmedsMod*> (ransacArray->At(0));
 			 if(fATRansac==nullptr){
 			  std::cout<<" Null pointer fATRansac "<<"\n";
 				continue;
@@ -302,7 +275,8 @@ void analysis_reprocess()
 			 //std::cout<<evnum<<"  "<<i<<"  "<<gated<<std::endl;
 
 			//if(trackCand.size()>1 && s800cal->GetIsInCut()==kTRUE){
-			if(trackCand.size()>0 && gated==kTRUE) {
+			//if(trackCand.size()>0 && gated==kTRUE) {
+			if(trackCand.size()>0) {
 
 				/*
 				//----------------------- S800 -------------------------------------------------
@@ -355,81 +329,27 @@ void analysis_reprocess()
 			//std::cout<<i<<" "<<" "<<S800_timeStamp<<" "<<S800_timeRf<<" "<<S800_y0<<std::endl;
 			*/
 
-				std::vector< std::pair <int,int> >  two_p_pair;
-				two_p_pair.clear();
 
-				//multi track analysis
-				for(Int_t w=0;w<trackCand.size()-1;w++){
-						TVector3 vertex0 = trackCand.at(w).GetTrackVertex();
-						for(Int_t z=w+1; z<trackCand.size();z++){
-									TVector3 vertex1 = trackCand.at(z).GetTrackVertex();
-									if(vertex0==vertex1) two_p_pair.push_back(std::make_pair(w,z));
-							}
-					}
-
-					/*
-				//only 2 protons per event
-				two_p_pair.clear();
-				two_p_pair.push_back(std::make_pair(0,1));
-				*/
-
-				for(Int_t w=0;w<two_p_pair.size();w++){
+				for(Int_t w=0;w<trackCand.size();w++){
 
 
-					theta1=0.; theta2=0.; phi1=0.; phi2=0.; range_p1=0.; range_p2=0.; eLoss_p1_reco=0.; eLoss_p2_reco=0.; mom1_norm_reco=0.; mom2_norm_reco=0.; //reset variables
-					E_tot_he2=0.; he2_mass_ex=0.; kin_He2=0.; theta_He2=0.; phi_He2=0.;theta_cm=0.; Ex4=0.;
-			  	MaxR1=0.; MaxR2=0.; MaxZ1=0.; MaxZ2=0.;
+					theta1=0.;  phi1=0.;  range_p1=0.;  eLoss_p1_reco=0.;  mom1_norm_reco=0.;  //reset variables
+					theta_cm=0.; Ex4=0.;
+			  	MaxR1=0.;  MaxZ1=0.;
 
-					TVector3 vertexMean = trackCand.at(two_p_pair[w].first).GetTrackVertex();
-      		TVector3 lastPoint1 = trackCand.at(two_p_pair[w].first).GetLastPoint();
-      		TVector3 lastPoint2 = trackCand.at(two_p_pair[w].second).GetLastPoint();
+					TVector3 vertexMean = trackCand.at(w).GetTrackVertex();
+      		TVector3 lastPoint1 = trackCand.at(w).GetLastPoint();
       		MaxR1=sqrt(pow(lastPoint1.X(),2)+pow(lastPoint1.Y(),2));
-      		MaxR2=sqrt(pow(lastPoint2.X(),2)+pow(lastPoint2.Y(),2));
       		MaxZ1=lastPoint1.Z();
-      		MaxZ2=lastPoint2.Z();
 
 
-					std::vector<ATHit>* hitArray1 = trackCand.at(two_p_pair[w].first).GetHitArray();
-					Int_t nHits1 = hitArray1->size();
-					Int_t tracknumb1 = two_p_pair[w].first;
-				  //std::cout << "Init   Hitarray size    "<<nHits << '\n';
-					hBr0 = new TH1D(Form("Bragg_%d_evt_%d",tracknumb1,i),Form("Bragg_%d_evt_%d",tracknumb1,i),120,0,600) ;
-					Double_t Tcharge1 = 0;
-
-				  for(Int_t iHit=0; iHit<nHits1; iHit++){
-				      ATHit hit = hitArray1->at(iHit);
-				      TVector3 position = hit.GetPosition();
-				      Double_t tq = hit.GetCharge();
-							TVector3 rangePoint =  position - vertexMean;
-							Double_t range = rangePoint.Mag();
-							hBr0->Fill(range,tq);
-							Tcharge1 += tq;
-				    }
-
-
-						std::vector<ATHit>* hitArray2 = trackCand.at(two_p_pair[w].second).GetHitArray();
-						Int_t nHits2 = hitArray2->size();
-						Int_t tracknumb2 = two_p_pair[w].second;
-						//std::cout << "Init   Hitarray size    "<<nHits << '\n';
-						hBr1 = new TH1D(Form("Bragg_%d_evt_%d",tracknumb2,i),Form("Bragg_%d_evt_%d",tracknumb2,i),120,0,600) ;
-						Double_t Tcharge2 = 0;
-
-						for(Int_t iHit=0; iHit<nHits2; iHit++){
-								ATHit hit = hitArray2->at(iHit);
-								TVector3 position = hit.GetPosition();
-								Double_t tq = hit.GetCharge();
-								TVector3 rangePoint =  position - vertexMean;
-								Double_t range = rangePoint.Mag();
-								hBr1->Fill(range,tq);
-								Tcharge2 += tq;
-							}
 
 
 
 					//std::cout<<s800cal->GetTS()<<" "<<MaxR1<<std::endl;
 
 					//if(MaxR1>=242. || MaxR2>=242. || MaxR1<=25. || MaxR2<=25. || MaxZ1>973. || MaxZ2>973.) continue; //if do no stop in chamber or in the beam hole
-					if(MaxR1>=242. || MaxR2>=242.  || MaxZ1>973. || MaxZ2>973.) continue; //if do no stop in chamber or in the beam hole
+					//if(MaxR1>=242. || MaxR2>=242.  || MaxZ1>973. || MaxZ2>973.) continue; //if do no stop in chamber or in the beam hole
 
 
 
@@ -438,114 +358,59 @@ void analysis_reprocess()
         	lastX1 = lastPoint1.X();
         	lastY1 = lastPoint1.Y();
         	lastZ1 = lastPoint1.Z();
-        	lastX2 = lastPoint2.X();
-        	lastY2 = lastPoint2.Y();
-        	lastZ2 = lastPoint2.Z();
         	vertexX = vertexMean.X();
         	vertexY = vertexMean.Y();
         	vertexZ = vertexMean.Z();
 
-        	theta1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1).first;
-        	theta2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2).first;
-        	phi1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1).second;
-        	phi2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2).second;
+        	theta1 = trackCand.at(w).GetThetaPhi(vertexMean, lastPoint1).first;
+        	phi1 = trackCand.at(w).GetThetaPhi(vertexMean, lastPoint1).second;
 
-        	std::vector<Double_t> fitPar1 = trackCand.at(two_p_pair[w].first).GetFitPar();
-        	std::vector<Double_t> fitPar2 = trackCand.at(two_p_pair[w].second).GetFitPar();
+        	std::vector<Double_t> fitPar1 = trackCand.at(w).GetFitPar();
 
-        	TVector3 vp1(TMath::Sign(1,lastX1)*fabs(fitPar1[1]),TMath::Sign(1,lastY1)*fabs(fitPar1[3]),-TMath::Sign(1,(lastZ1-vertexZ))*fabs(fitPar1[5]));
-        	TVector3 vp2(TMath::Sign(1,lastX2)*fabs(fitPar2[1]),TMath::Sign(1,lastY2)*fabs(fitPar2[3]),-TMath::Sign(1,(lastZ2-vertexZ))*fabs(fitPar2[5]));
-        	angle12=FindAngleBetweenTracks(vp1,vp2);
 
-					//std::cout<<i<<" "<<" protons 1 2 theta : "<<theta1<<" "<<theta2<<"\n";
-					//std::cout<<i<<" protons 1 2 phi : "<<phi1<<" "<<phi2<<"\n";
-
-        	range_p1 = trackCand.at(two_p_pair[w].first).GetLinearRange(vertexMean,lastPoint1);
-        	range_p2 = trackCand.at(two_p_pair[w].second).GetLinearRange(vertexMean,lastPoint2);
-
-        	//==============================================================================
-        	// methods to get the proton eloss
-
-        	//eLoss_p1_reco = eloss_approx(range_p1);
-        	//eLoss_p2_reco = eloss_approx(range_p2);
-
+        	range_p1 = trackCand.at(w).GetLinearRange(vertexMean,lastPoint1);
         	eLoss_p1_reco = graphtable->Eval(range_p1);
-        	eLoss_p2_reco = graphtable->Eval(range_p2);
 
-        	//std::cout<<i<<" vertex : "<<vertexZ<<"\n";
-        	//std::cout<<i<<" range p1 p2 : "<<range_p1<<" "<<range_p2<<"\n";
-        	//std::cout<<i<<" eloss reco : "<<eLoss_p1_reco<<" "<<eLoss_p2_reco<<" "<<"\n";
+					theta_range->Fill(theta1*180/3.1415,range_p1);
+					theta_kin->Fill(theta1*180/3.1415,eLoss_p1_reco);
 
-        	//==============================================================================
-
-        	epsilon_pp = 0.5*(eLoss_p1_reco + eLoss_p2_reco - 2 * sqrt(eLoss_p1_reco * eLoss_p2_reco) * TMath::Cos (angle12));
-        	epsilon_pp_reco->Fill(epsilon_pp);
-
+        		/*
           // reconstruction of 2He
         	mom1_norm_reco = TMath::Sqrt(eLoss_p1_reco * eLoss_p1_reco + 2.0 * eLoss_p1_reco * proton_mass);
         	mom_proton1_reco.SetX (mom1_norm_reco * TMath::Sin(theta1) * TMath::Cos(phi1));
         	mom_proton1_reco.SetY (mom1_norm_reco * TMath::Sin(theta1) * TMath::Sin(phi1));
         	mom_proton1_reco.SetZ (mom1_norm_reco * TMath::Cos(theta1));
+					*/
 
-        	mom2_norm_reco = TMath::Sqrt (eLoss_p2_reco * eLoss_p2_reco + 2.0 * eLoss_p2_reco * proton_mass);
-        	mom_proton2_reco.SetX (mom2_norm_reco * TMath::Sin(theta2) * TMath::Cos(phi2));
-        	mom_proton2_reco.SetY (mom2_norm_reco * TMath::Sin(theta2) * TMath::Sin(phi2));
-        	mom_proton2_reco.SetZ (mom2_norm_reco * TMath::Cos(theta2));
-        	//std::cout<<i<<" mom1 : "<<mom_proton1_reco.Mag()<<"\n";
-        	//std::cout<<i<<" mom2 : "<<mom_proton2_reco.Mag()<<"\n";
+					//if((theta1*180/3.1415>20 && theta1*180/3.1415<80) || (theta1*180/3.1415>100 && theta1*180/3.1415<160) && (range_p1<230))theta_r_he2_reco->Fill(theta1*180/3.1415);
 
-        	mom_He2_reco = mom_proton1_reco + mom_proton2_reco;
-        	E_tot_he2 = (proton_mass + eLoss_p1_reco) + (proton_mass + eLoss_p2_reco);
-        	he2_mass_ex = TMath::Sqrt (E_tot_he2 * E_tot_he2 - mom_He2_reco.Mag2 ());
-        	ex_he2_reco->Fill (he2_mass_ex - he2_mass);
-
-        	kin_He2 = TMath::Sqrt (mom_He2_reco.Mag2 () + he2_mass_ex * he2_mass_ex) - he2_mass_ex;
-        	theta_He2 = mom_He2_reco.Theta ()* TMath::RadToDeg();
-
-        	phi_He2 = mom_He2_reco.Phi ()* TMath::RadToDeg();
-        	theta_r_he2_reco->Fill (theta_He2);
-        	phi_r_he2_reco->Fill (phi_He2);
-        	kin_r_he2_reco->Fill (kin_He2);
-        	theta_kin_he2_reco->Fill (theta_He2, kin_He2);
-
-        	d2heana->kine_2b (proj_mass, target_mass, he2_mass_ex, recoil_mass, Ekin_proj, theta_He2 * TMath::DegToRad (), kin_He2);
-
+        	d2heana->kine_2b (proj_mass, target_mass, recoil_mass, ejectile_mass, Ekin_proj, theta1, eLoss_p1_reco);
         	theta_cm = d2heana->GetThetaCM ();
         	Ex4 = d2heana->GetMissingMass ();
 
-        	thetacm_he2_reco->Fill (theta_cm);
+        	thetacm->Fill (theta_cm);
         	Ex_reco->Fill (Ex4);
-        	thetacm_Ex_he2_reco->Fill (theta_cm, Ex4);
-        	thetacm_epsilon_pp_reco->Fill(theta_cm,epsilon_pp);
+        	thetacm_Ex->Fill (theta_cm, Ex4);
 
         	ivt=i;
         	anatree->Fill();
-					outfile->cd("Bragg");
-					hBr0->Write();
-					hBr1->Write();
-					delete hBr0;
-					delete hBr1;
-				}//two proton pairs
+
+				}//all tracks
 		} //gated and  tracks.size()>1
 	}// Event loop
 
 
 	/// --------------------- End event loop ---------------------------------------
-	outfile->cd();
+
 	anatree->Write();
 	//	tracks_z_r->Write ();
 	//	tracks_x_y->Write ();
-	theta_r_he2_reco->Write ();
-	phi_r_he2_reco->Write ();
-	kin_r_he2_reco->Write ();
-	theta_kin_he2_reco->Write ();
-	thetacm_he2_reco->Write ();
-	Ex_reco->Write ();
-	ex_he2_reco->Write ();
-	thetacm_Ex_he2_reco->Write ();
-	thetacm_epsilon_pp_reco->Write();
-	epsilon_pp_reco->Write();
 
+	thetacm_Ex->Write ();
+	theta_range->Write();
+	theta_kin->Write();
+	thetacm->Write();
+	Ex_reco->Write();
 	//tof_dE->Write();
 	dta_ata->Write();
 	x_y_crdc1->Write();
