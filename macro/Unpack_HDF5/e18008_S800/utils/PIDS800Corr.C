@@ -1,6 +1,6 @@
 
 
-void PIDS800Corr(int runNumberS800){
+void PIDS800Corr(int runNumberS800=2069){
 
 
   // Double_t x0_corr_tof = 0.101259;
@@ -18,7 +18,7 @@ void PIDS800Corr(int runNumberS800){
 
 
 
-  TString digiFileName = TString::Format("/mnt/analysis/e18008/rootS800/cal/run-%04d-00.root", runNumberS800);
+  TString digiFileName = TString::Format("/home/juan/NSCL/s800_only/run-%04d-00.root", runNumberS800);
 
   TFile* file = new TFile(digiFileName,"READ");
 
@@ -28,17 +28,18 @@ void PIDS800Corr(int runNumberS800){
   S800Calc *s800cal = new S800Calc();
   TBranch *bS800cal = tree->GetBranch("s800calc");
   bS800cal->SetAddress(&s800cal);
- 
+
 
 
   TFile* outfile;
-  TString outFileName = TString::Format("../rootPID/PIDCorr_run%04d.root", runNumberS800);
+  TString outFileName = TString::Format("/home/juan/NSCL/s800_only/PIDCorr_run%04d.root", runNumberS800);
   outfile   = TFile::Open(outFileName.Data(),"recreate");
 
   //auto c1 = new TCanvas("c1", "c1", 800, 800);
   //auto c2 = new TCanvas("c2", "c2", 800, 800);
-  TH2D *XfpObj_Obj = new TH2D ("XfpObj_Obj", "XfpObj_Obj",500,-70,-20,600,250,280);//PID1
-  TH2D *ICSum_Obj = new TH2D ("ICSum_Obj", "ICSum_Obj",500,-70,-20,1000,50,750);//PID2
+  TH2D *XfpObj_Obj = new TH2D ("XfpObj_Obj", "XfpObj_Obj",500,-120,-20,600,240,300);//PID1
+  TH2D *ICSum_Obj = new TH2D ("ICSum_Obj", "ICSum_Obj",500,-120,-20,1000,0,750);//PID2
+  TH2D *X_afp = new TH2D ("X_afp", "Xfp_vs_afp",500,-300,300,1000,-0.80,0.8);//PID3
   TH2D *CRDCX_Obj = new TH2D ("CRDCX_Obj","CRDCX_Obj",500,-70,-20,1000,-500,500);
 
 
@@ -50,6 +51,7 @@ void PIDS800Corr(int runNumberS800){
   Double_t Xf_ObjCorr=0.;
   Int_t CondMTDCObj = 0;
   Int_t CondMTDCXfObj = 0;
+  Int_t CondXf = 0;
 
   TTree *atree = new TTree("atree","new TTree");
   atree->Branch("Xf",&Xf);
@@ -110,11 +112,15 @@ void PIDS800Corr(int runNumberS800){
     Float_t S800_timeObjSelect=-999;
     Float_t S800_timeXfSelect=-999;
 
+
+
     for(int k=0; k<S800_timeMTDCXf.size(); k++){
-    	if(S800_timeMTDCXf.at(k)>215 && S800_timeMTDCXf.at(k)<235) S800_timeXfSelect=S800_timeMTDCXf.at(k);//150-315
+    	if(S800_timeMTDCXf.at(k)>160 && S800_timeMTDCXf.at(k)<240) S800_timeXfSelect=S800_timeMTDCXf.at(k);//150-315
     }
+
+
     for(int k=0; k<S800_timeMTDCObj.size(); k++){
-    	if(S800_timeMTDCObj.at(k)>-60 && S800_timeMTDCObj.at(k)<-30) S800_timeObjSelect=S800_timeMTDCObj.at(k);//-60-30
+    	if(S800_timeMTDCObj.at(k)>-120 && S800_timeMTDCObj.at(k)<-20) S800_timeObjSelect=S800_timeMTDCObj.at(k);//-60-30
     }
 
     Double_t XfObj_tof = S800_timeXfSelect - S800_timeObjSelect;
@@ -134,14 +140,22 @@ void PIDS800Corr(int runNumberS800){
 
 
     //std::cout<<S800_tofCorr<<"  "<<S800_dECorr<<"  "<<XfObj_tof<<std::endl;
+    std::cout <<ObjCorr<<"  "<<XfObj_tof<<"  "<<S800_x0<<"  "<<S800_afp<<"  "<<S800_ICSum<< '\n';
 
     if(std::isnan(ObjCorr)==1 || std::isnan(XfObj_tof)==1 || std::isnan(S800_ICSum)==1) continue;
 
+    if(CondMTDCXfObj && std::isnan(S800_x0)==0 && std::isnan(S800_afp)==0 && std::isnan(S800_ICSum)==0){
+     CondXf = 1;
+    }
+
+      if(XfObj_tof<270 || XfObj_tof>274) continue; //cut in 14O incoming beam
+      if(S800_afp>0.06) continue; //remove diagonal line
 
       //if(CondMTDCXfObj)XfpObj_Obj->Fill(S800_timeObjSelect,XfObj_tof);
       if(CondMTDCXfObj)XfpObj_Obj->Fill(ObjCorr,XfObj_tof);
       //if(CondMTDCObj)ICSum_Obj->Fill(S800_timeObjSelect,S800_ICSum);
       if(CondMTDCObj)ICSum_Obj->Fill(ObjCorr,S800_ICSum);
+      if(CondXf) X_afp->Fill(S800_x0,S800_afp);
 
     //std::cout<<S800_timeObjSelect<<"  "<<XfObj_tof<<" "<<S800_ICSum<<std::endl;
 
@@ -149,7 +163,7 @@ void PIDS800Corr(int runNumberS800){
      CRDC1_X=S800_x0;
      CRDC2_X=S800_x1;
      afp=S800_afp;
-     
+
 
      CRDCX_Obj->Fill(ObjCorr,CRDC1_X);
 
@@ -163,6 +177,7 @@ void PIDS800Corr(int runNumberS800){
   //c2->cd();
   //XfpObj_Obj->Draw("colz");
   XfpObj_Obj->Write();
+  X_afp->Write();
   //CRDCX_Obj->Draw("colz");
   atree->Write();
 outfile->Close();

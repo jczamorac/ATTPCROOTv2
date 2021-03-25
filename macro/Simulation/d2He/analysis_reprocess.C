@@ -131,7 +131,7 @@ void analysis_reprocess()
 		// TTreeReaderValue<S800Calc> s800Calc(reader, "s800cal");
 		TTreeReaderValue<TClonesArray> ransacArray(reader, "ATRansac");
 		TTreeReaderValue<TClonesArray> eventArray(reader, "ATEventH");
-		TTreeReaderValue<TClonesArray> SimPointArray(reader, "AtTpcPoint");
+		//TTreeReaderValue<TClonesArray> SimPointArray(reader, "AtTpcPoint");
 
 		TFile* outfile;
 		// TString  outFileNameHead = "attpcana_merg_newRansac.root";
@@ -284,7 +284,7 @@ void analysis_reprocess()
 			Double_t Ep2=0;
 			Bool_t fl1 = kTRUE;
 			Bool_t fl2 = kTRUE;
-
+			/*
 			Int_t Npoints = SimPointArray -> GetEntries();
 
 			//std::cout<<i <<"  "<<Npoints<<std::endl;
@@ -331,7 +331,7 @@ void analysis_reprocess()
 				Double_t mom_eje = TMath::Sqrt(Eeje * Eeje + 2.0 * Eeje * recoil_mass);
 				Pejec.SetXYZ(mom_eje*PejeU.X(),mom_eje*PejeU.Y(),mom_eje*PejeU.Z());
 				Double_t EejeTot = recoil_mass + Eeje;
-
+				*/
 				//Double_t phiEje = atan2(Pejec.Y(),Pejec.X())*180./3.1415;
 				//std::cout<<i <<"  "<<Anejec<<"  "<<Pejec.Theta()*180./3.1415<<"  "<<Pejec.Mag()<<std::endl;
 
@@ -354,7 +354,7 @@ void analysis_reprocess()
 	     ATEvent* cevent = (ATEvent*) eventArray->At(0);
 	     Bool_t gated = cevent->IsExtGate();
 
-			 //std::cout<<"Hello  "<<nEvents<<std::endl;
+			 //std::cout<<"Hello  "<<nEvents<<"  "<<trackCand.size()<<std::endl;
 
 			//if(trackCand.size()>1 && s800cal->GetIsInCut()==kTRUE){
 			//if(trackCand.size()>1 && gated==kTRUE) {
@@ -420,6 +420,7 @@ void analysis_reprocess()
 						for(Int_t z=w+1; z<trackCand.size();z++){
 									TVector3 vertex1 = trackCand.at(z).GetTrackVertex();
 									if(vertex0==vertex1) two_p_pair.push_back(std::make_pair(w,z));
+									//std::cout<<"Hello  "<<vertex1.Z()<<"  "<<vertex0.Z()<<std::endl;
 							}
 					}
 
@@ -428,6 +429,8 @@ void analysis_reprocess()
 				two_p_pair.clear();
 				two_p_pair.push_back(std::make_pair(0,1));
 				*/
+
+
 
 				for(Int_t w=0;w<two_p_pair.size();w++){
 
@@ -445,6 +448,7 @@ void analysis_reprocess()
       		MaxZ2=lastPoint2.Z();
 
 					//std::cout<<s800cal->GetTS()<<" "<<MaxR1<<std::endl;
+
 
 					if(MaxR1>=242. || MaxR2>=242. || MaxR1<=25. || MaxR2<=25. || MaxZ1>973. || MaxZ2>973.) continue; //if do no stop in chamber or in the beam hole
 
@@ -513,7 +517,7 @@ void analysis_reprocess()
         	//std::cout<<i<<" mom1 : "<<mom_proton1_reco.Mag()<<"\n";
         	//std::cout<<i<<" mom2 : "<<mom_proton2_reco.Mag()<<"\n";
 
-
+					/*
 					//-------------------Kinematic Fitting--------------------
 					Double_t mom_proj_norm = TMath::Sqrt(Ekin_proj * Ekin_proj + 2.0 * Ekin_proj * proj_mass);
 					TVector3 mom_proj(0,0,mom_proj_norm);
@@ -549,6 +553,41 @@ void analysis_reprocess()
 						alphaout.clear();
 
 					//---------------------------------------------------------
+					*/
+
+					
+					//-------------------Kinematic Fitting New--------------------
+					Double_t mom_proj_norm = TMath::Sqrt(Ekin_proj * Ekin_proj + 2.0 * Ekin_proj * proj_mass);
+					TVector3 mom_proj(0,0,mom_proj_norm);
+					Double_t EproTot = Ekin_proj + proj_mass;
+
+					if(i%2==0) continue;
+						std::vector<double> alphain;
+						std::vector<double> alphaout;
+						alphain.push_back(mom_proj.X());
+						alphain.push_back(mom_proj.Y());
+						alphain.push_back(mom_proj.Z());
+						alphain.push_back(EproTot);
+						alphain.push_back(mom_proton1_reco.X());
+						alphain.push_back(mom_proton1_reco.Y());
+						alphain.push_back(mom_proton1_reco.Z());
+						alphain.push_back(Ep1Tot);
+						alphain.push_back(mom_proton2_reco.X());
+						alphain.push_back(mom_proton2_reco.Y());
+						alphain.push_back(mom_proton2_reco.Z());
+						alphain.push_back(Ep2Tot);
+
+
+						d2heana->KFit_new(alphain,alphaout);
+						mom_proton1_reco.SetXYZ(alphaout[4],alphaout[5],alphaout[6]);
+						Ep1Tot = alphaout[7];
+						mom_proton2_reco.SetXYZ(alphaout[8],alphaout[9],alphaout[10]);
+						Ep2Tot = alphaout[11];
+						alphain.clear();
+						alphaout.clear();
+
+					//---------------------------------------------------------
+
 
         	mom_He2_reco = mom_proton1_reco + mom_proton2_reco;
         	//E_tot_he2 = (proton_mass + eLoss_p1_reco) + (proton_mass + eLoss_p2_reco);

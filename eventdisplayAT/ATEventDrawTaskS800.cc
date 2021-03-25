@@ -1621,7 +1621,7 @@ ATEventDrawTaskS800::DrawPID()
 
     fCvsPID->cd();
     //fPID = new TH2F("PID","PID",3000,-250,500,2000,0,500);
-fPID = new TH2F("PID","PID",500,-150,50,300,230,260);
+fPID = new TH2F("PID","PID",500,-120,20,600,240,300);
     //fLvsTheta->SetMarkerStyle(22);
     //fLvsTheta->SetMarkerColor(kRed);
     fPID -> Draw("colz");
@@ -1634,7 +1634,7 @@ ATEventDrawTaskS800::DrawPID2()
 
     fCvsPID2->cd();
     //fPID2 = new TH2F("PID2","PID2",3000,-250,500,2000,0,500);
-fPID2 = new TH2F("PID2","PID2",500,-150,50,1000,1400,2200);
+fPID2 = new TH2F("PID2","PID2",500,-120,20,1000,0,750);
     //fLvsTheta->SetMarkerStyle(22);
     //fLvsTheta->SetMarkerColor(kRed);
     fPID2 -> Draw("colz");

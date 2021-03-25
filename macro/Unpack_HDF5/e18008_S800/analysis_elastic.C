@@ -135,7 +135,7 @@ Double_t aGraph2toFunc(double *xx, double *)
 }
 
 
-void analysis(int runNumberS800=2063, int runNumberATTPC=63)
+void analysis_elastic(int runNumberS800=2063, int runNumberATTPC=63)
 	{
 
 		SetERtable();
@@ -154,14 +154,8 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 
 		S800Calc *s800cal = new S800Calc();
 		TBranch *bS800cal = tree->GetBranch("s800cal");
-	  	bS800cal->SetAddress(&s800cal);
+	  bS800cal->SetAddress(&s800cal);
 
-		// TChain* inputdata = new TChain("cbmsim");
-  	// inputdata->Add(digiFileName);
-		// inputdata->LoadTree(0);
-  	//inputdata->Print();
-  	//std::cout<<inputdata->GetListOfFiles()<<std::endl;
-		// TTreeReader inputfilereader(inputdata);
 
 		TTreeReader reader("cbmsim", file);
 		// TTreeReaderValue<S800Calc> s800Calc(reader, "s800cal");
@@ -171,11 +165,14 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 		// TString  outFileNameHead = "attpcana_merg_newRansac.root";
 		//TString outFileNameHead = TString::Format("/mnt/analysis/e18008/rootAna/runAnalyzed_%04d_%04d.root", runNumberS800, runNumberATTPC);
 		TString outFileNameHead = TString::Format("runAnalyzed_%04d_%04d.root", runNumberS800, runNumberATTPC);
+		//TString digiFileName = TString::Format("/mnt/analysis/e18008/rootMerg/jcz_test/run_%04d_%04d.root", runNumberS800, runNumberATTPC);
 		//TString outFileNameHead = TString::Format("runAnalyzed_%04d_%04d.root", runNumberS800, runNumberATTPC);
 
 		outfile   = TFile::Open(outFileNameHead.Data(),"recreate");
 		outfile->cd();//New Bragg
-	  	outfile->mkdir("Bragg");//New Bragg
+	  outfile->mkdir("Bragg");//New Bragg
+		outfile->mkdir("nogate");
+		outfile->mkdir("gated");
 
 		TH1F* scatteringAngle = new TH1F("scatteringAngle","scatteringAngle",1000,0,200);
 		TH1F* energy = new TH1F("enegy","energy",100,0,40);
@@ -197,6 +194,24 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 		// TH2D *tof_dE = new TH2D ("tof_dE", "tof_dE", 250, 1000, 1500, 250, 0, 500);//PID
 		TH2D *XfpObj_tof = new TH2D ("XfpObj_tof", "XfpObj_tof", 500,-70,-20,600,250,280);//PID1
 		TH2D *ICSum_Obj = new TH2D ("ICSum_Obj", "ICSum_Obj",500,-70,-20,1000,50,750);//PID2
+
+
+
+		TH2D *XfpObj_Obj_g = new TH2D ("XfpObj_Obj_g", "XfpObj_Obj",500,-120,-20,600,240,300);//PID1
+	  TH2D *ICSum_Obj_g = new TH2D ("ICSum_Obj_g", "ICSum_Obj",500,-120,-20,1000,0,750);//PID2
+	  TH2D *X_afp_g = new TH2D ("X_afp_g", "Xfp_vs_afp",500,-300,300,1000,-0.80,0.8);//PID3
+		TH2D *XfpObj_Obj_ng = new TH2D ("XfpObj_Obj_ng", "XfpObj_Obj",500,-120,-20,600,240,300);//PID1
+	  TH2D *ICSum_Obj_ng = new TH2D ("ICSum_Obj_ng", "ICSum_Obj",500,-120,-20,1000,0,750);//PID2
+	  TH2D *X_afp_ng = new TH2D ("X_afp_ng", "Xfp_vs_afp",500,-300,300,1000,-0.80,0.8);//PID3
+
+
+		TH1F* verZ = new TH1F("vertexZ","vertexZ",500,-200,1500);
+		TH2F* vertexvsAngle = new TH2F("vertexvsAngle","vertexvsAngle",500,-200,1500, 180,0,180);
+		TH2D *theta_range = new TH2D ("theta_range", "theta_range", 180, 0, 180, 250, 0, 600);
+		TH2D *theta_kin = new TH2D ("theta_kin", "theta_kin", 180, 0, 180, 250, 0, 4);
+
+
+
 		TH2D *dta_ata = new TH2D ("dta_ata", "dta_ata", 250, -0.25, 0.25, 100, -10, 10);//acceptance
 		TH2D *x_y_crdc1 = new TH2D ("x_y_crdc1", "x_dy_crdc1", 300, -300, 300, 150, -150, 150);//positions crdc1
 		TH2D *x_y_crdc2 = new TH2D ("x_y_crdc2", "x_dy_crdc2", 300, -300, 300, 150, -150, 150);//positions crdc2
@@ -223,47 +238,36 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 		Double_t S800_XfObj_tof=0.,S800_ObjCorr=0., S800_Obj=0.;
 		Double_t S800_ICSum=0.;
 		Double_t MaxR1, MaxR2, MaxZ1, MaxZ2;
-    		Int_t CondMTDCObj = 0,CondMTDCXfObj = 0;
+    Int_t CondMTDCObj = 0,CondMTDCXfObj = 0;
 		Double_t beam_theta=0., beam_phi=0.;
 		Double_t chargeTot1=0., chargeTot2=0.;
-
+		Bool_t coincidence = kFALSE;
 
 		TVector3 mom_proton1_reco, mom_proton2_reco,mom_He2_reco;
+		std::vector<float> VerX, VerY, VerZ;
+		std::vector<float> PlastX, PlastY, PlastZ;
+		std::vector<float> Range;
+		std::vector<float> ThetaLab;
+		std::vector<float> PhiLab;
+		std::vector<int> Nhits_track;
+		std::vector<float> Charge;
 
 		TTree *anatree = new TTree("anatree","new TTree");
 
 		anatree->Branch("ivt",&ivt);
-		anatree->Branch("range_p1",&range_p1);
-		anatree->Branch("range_p2",&range_p2);
-		anatree->Branch("theta1",&theta1);
-		anatree->Branch("theta2",&theta2);
-		anatree->Branch("phi1",&phi1);
-		anatree->Branch("phi2",&phi2);
-		anatree->Branch("lastX1",&lastX1);
-		anatree->Branch("lastY1",&lastY1);
-		anatree->Branch("lastZ1",&lastZ1);
-		anatree->Branch("lastX2",&lastX2);
-		anatree->Branch("lastY2",&lastY2);
-		anatree->Branch("lastZ2",&lastZ2);
-		anatree->Branch("chargeTot1",&chargeTot1);
-		anatree->Branch("chargeTot2",&chargeTot2);
-		anatree->Branch("vertexX",&vertexX);
-		anatree->Branch("vertexY",&vertexY);
-		anatree->Branch("vertexZ",&vertexZ);
-		anatree->Branch("beam_theta",&beam_theta);
-		anatree->Branch("beam_phi",&beam_phi);
-		anatree->Branch("angle12",&angle12);
-		anatree->Branch("eLoss_p1_reco",&eLoss_p1_reco);
-		anatree->Branch("eLoss_p2_reco",&eLoss_p2_reco);
-		anatree->Branch("kin_He2",&kin_He2);
-		anatree->Branch("theta_He2",&theta_He2);
-		anatree->Branch("E_tot_he2",&E_tot_he2);
-		anatree->Branch("he2_mass_ex",&he2_mass_ex);
-		anatree->Branch("theta_cm",&theta_cm);
-		anatree->Branch("Ex4",&Ex4);
-		anatree->Branch("epsilon_pp",&epsilon_pp);
-		anatree->Branch("mom1_norm_reco",&mom1_norm_reco);
-		anatree->Branch("mom2_norm_reco",&mom2_norm_reco);
+		anatree->Branch("VerX",&VerX);
+		anatree->Branch("Very",&VerY);
+		anatree->Branch("VerZ",&VerZ);
+		anatree->Branch("PlastX",&PlastX);
+		anatree->Branch("PlastY",&PlastY);
+		anatree->Branch("PlastZ",&PlastZ);
+		anatree->Branch("Range",&Range);
+		anatree->Branch("ThetaLab",&ThetaLab);
+		anatree->Branch("PhiLab",&PhiLab);
+		anatree->Branch("Nhits_track",&Nhits_track);
+		anatree->Branch("coincidence",&coincidence);
+		anatree->Branch("Charge_track",&Charge);
+
 		//----- S800
 		anatree->Branch("S800_timeStamp",&S800_timeStamp,"S800_timeStamp/l");
 		//anatree->Branch("S800_timeRf",&S800_timeRf);
@@ -353,6 +357,10 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 			S800_timeE1up=0.;S800_timeE1down=0.;S800_timeE1=0.;S800_timeXf=0.;S800_timeObj=0.;
 			S800_tof=0.;
 
+			VerX.clear(); VerY.clear(); VerZ.clear();
+			PlastX.clear(); PlastY.clear(); PlastZ.clear();
+			Range.clear(); ThetaLab.clear(); PhiLab.clear(); Nhits_track.clear();
+			Charge.clear();
 
 			// ATRANSACN::ATRansac* fATRansac  = dynamic_cast<ATRANSACN::ATRansac*> (ransacArray->At(0));
 		  // ATRansacMod* fATRansac  = dynamic_cast<ATRansacMod*> (ransacArray->At(0));
@@ -367,9 +375,19 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 
 			 //std::cout<<s800cal->GetTS()<<" "<<i<<"  "<<trackCand.size()<<"  "<<s800cal->GetIsInCut()<<std::endl;
 
+			 //---------------------ungated
 
-			if(trackCand.size()>1 && s800cal->GetIsInCut()==kTRUE){
-			//if(trackCand.size()>1){
+
+			 //--------------------
+
+
+
+
+
+
+
+
+
 
 
 				//----------------------- S800 -------------------------------------------------
@@ -419,271 +437,110 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 
 
 
-			//  S800_timeRf = s800cal->GetMultiHitTOF()->GetFirstRfHit();
-			//  S800_timeE1up = s800cal->GetMultiHitTOF()->GetFirstE1UpHit();
-			//  S800_timeE1down = s800cal->GetMultiHitTOF()->GetFirstE1DownHit();
-			//  S800_timeE1 = sqrt( (corrGainE1up*S800_timeE1up) * (corrGainE1down*S800_timeE1down) );
-			//  S800_timeXf = s800cal->GetMultiHitTOF()->GetFirstXfHit();
-			//  S800_timeObj = s800cal->GetMultiHitTOF()->GetFirstObjHit();
-
 			  S800_E1up = s800cal->GetSCINT(0)->GetDEup();
 			  S800_E1down = s800cal->GetSCINT(0)->GetDEdown();
-
-			  //S800_tof = S800_timeObj - S800_timeE1;
-			  //XfObj_tof = S800_timeXf - S800_timeObj;
-
-				// S800_dE = s800cal->GetSCINT(0)->GetDE();//check if is this scint (0)
 				S800_dE = sqrt( (corrGainE1up*S800_E1up) * (corrGainE1down* S800_E1down ) );
 				S800_dECorr = S800_dE + afp_corr_dE*S800_afp + x0_corr_dE*fabs(S800_x0);
 				for (Int_t j=0; j<32; j++) if (s800cal->GetHODOSCOPE(j)->GetEnergy()>=10 && s800cal->GetHODOSCOPE(j)->GetEnergy()<=4000) S800_hodoSum += s800cal->GetHODOSCOPE(j)->GetEnergy()*3000./coeff_hodo[j];
-				/*std::vector <double> S800_invMapOut = get_invmap_vars(inv_map,S800_x0,S800_y0,S800_afp,S800_bfp);
-				S800_ata = S800_invMapOut.at(0);
-				S800_bta = S800_invMapOut.at(1);
-				S800_yta = S800_invMapOut.at(2);
-				S800_dta = S800_invMapOut.at(3);
-				S800_thetaLab= S800_invMapOut.at(4);
-				S800_phi= S800_invMapOut.at(5);*/
-
-
-    //std::cout<<"draw func in cut "<<S800_timeObjSelect<<" "<<XfObj_tof<<" "<<S800_ICSum<<std::endl;
 
 
 				// tof_dE->Fill(S800_tof,S800_dE);
 				ICSum_Obj->Fill(S800_ObjCorr,S800_ICSum);
-		    		XfpObj_tof->Fill(S800_XfObj_tof,S800_ObjCorr);
+		    XfpObj_tof->Fill(S800_XfObj_tof,S800_ObjCorr);
 
-				//dta_ata->Fill(S800_dta,S800_ata*180./TMath::Pi());//ata in deg
+			//dta_ata->Fill(S800_dta,S800_ata*180./TMath::Pi());//ata in deg
 				x_y_crdc1->Fill(S800_x0,S800_y0);
 				x_y_crdc2->Fill(S800_x1,S800_y1);
 
 			//std::cout<<i<<" "<<" "<<S800_timeStamp<<" "<<S800_timeRf<<" "<<S800_y0<<std::endl;
 
+			///no gate
+			XfpObj_Obj_ng->Fill(S800_ObjCorr,S800_XfObj_tof);
+			ICSum_Obj_ng->Fill(S800_ObjCorr,S800_ICSum);
+			X_afp_ng->Fill(S800_x0,S800_afp);
 
-				std::vector< std::pair <int,int> >  two_p_pair;
-				two_p_pair.clear();
+			if(s800cal->GetIsInCut()==kTRUE){
+			//gated
+				XfpObj_Obj_g->Fill(S800_ObjCorr,S800_XfObj_tof);
+				ICSum_Obj_g->Fill(S800_ObjCorr,S800_ICSum);
+				X_afp_g->Fill(S800_x0,S800_afp);
+			}
 
-				//multi track analysis
-				for(Int_t w=0;w<trackCand.size()-1;w++){
-						TVector3 vertex0 = trackCand.at(w).GetTrackVertex();
-						for(Int_t z=w+1; z<trackCand.size();z++){
-									TVector3 vertex1 = trackCand.at(z).GetTrackVertex();
-									if(vertex0==vertex1) two_p_pair.push_back(std::make_pair(w,z));
-							}
-					}
+			coincidence = s800cal->GetIsInCut();
 
-				/*
-				//only 2 protons per event
-				two_p_pair.clear();
-				two_p_pair.push_back(std::make_pair(0,1));
-				*/
-
-				for(Int_t w=0;w<two_p_pair.size();w++){
+		   //if(trackCand.size()>0 && s800cal->GetIsInCut()==kTRUE) {
+			if(trackCand.size()>0) {
 
 
-					theta1=0.; theta2=0.; phi1=0.; phi2=0.; range_p1=0.; range_p2=0.; eLoss_p1_reco=0.; eLoss_p2_reco=0.; mom1_norm_reco=0.; mom2_norm_reco=0.; //reset variables
-					E_tot_he2=0.; he2_mass_ex=0.; kin_He2=0.; theta_He2=0.; phi_He2=0.;theta_cm=0.; Ex4=0.;
-			  	MaxR1=0.; MaxR2=0.; MaxZ1=0.; MaxZ2=0., beam_theta=0., beam_phi=0.;
 
-					TVector3 vertexMean = trackCand.at(two_p_pair[w].first).GetTrackVertex();
-      		TVector3 lastPoint1 = trackCand.at(two_p_pair[w].first).GetLastPoint();
-      		TVector3 lastPoint2 = trackCand.at(two_p_pair[w].second).GetLastPoint();
+				for(Int_t w=0;w<trackCand.size();w++){
+
+
+					theta1=0.;  phi1=0.;  range_p1=0.;  eLoss_p1_reco=0.;  mom1_norm_reco=0.;  //reset variables
+					theta_cm=0.; Ex4=0.;
+			  	MaxR1=0.;  MaxZ1=0.;
+
+					TVector3 vertexMean = trackCand.at(w).GetTrackVertex();
+      		TVector3 lastPoint1 = trackCand.at(w).GetLastPoint();
       		MaxR1=sqrt(pow(lastPoint1.X(),2)+pow(lastPoint1.Y(),2));
-      		MaxR2=sqrt(pow(lastPoint2.X(),2)+pow(lastPoint2.Y(),2));
       		MaxZ1=lastPoint1.Z();
-      		MaxZ2=lastPoint2.Z();
 
-				std::vector <double> S800_invMapOut = get_invmap_vars(inv_map,S800_x0/1000.,S800_y0/1000.,S800_afp,S800_bfp,0.8-vertexMean.Z()/1.0e3);
-				S800_ata = S800_invMapOut.at(0);
-				S800_bta = S800_invMapOut.at(1);
-				S800_yta = S800_invMapOut.at(2);
-				S800_dta = S800_invMapOut.at(3);
-				S800_thetaLab= S800_invMapOut.at(4);
-				S800_phi= S800_invMapOut.at(5);
-
-				dta_ata->Fill(S800_dta,S800_ata*180./TMath::Pi());//ata in deg
-
-//----------- New Bragg ----------------------------------
-		/*
+					if(vertexMean.Z()<-100 || vertexMean.Z()>1200) continue;
 
 
-					std::vector<ATHit>* hitArray1 = trackCand.at(two_p_pair[w].first).GetHitArray();
-					Int_t nHits1 = hitArray1->size();
-					Int_t tracknumb1 = two_p_pair[w].first;
-				  //std::cout << "Init   Hitarray size    "<<nHits << '\n';
-					Int_t Nbins=120;
-					hBr0 = new TH1D(Form("Bragg_%d_evt_%d",tracknumb1,i),Form("Bragg_%d_evt_%d",tracknumb1,i),Nbins,0,600) ;
-					Double_t Tcharge1 = 0;
-					vector<Double_t> vRange1;
-					vector<Double_t> vCharge1;
-
-
-				  for(Int_t iHit=0; iHit<nHits1; iHit++){
-				      ATHit hit = hitArray1->at(iHit);
-				      TVector3 position = hit.GetPosition();
-				      Double_t tq = hit.GetCharge();
-							TVector3 rangePoint =  position - vertexMean;
-							Double_t range = rangePoint.Mag();
-							Tcharge1 += tq;
-							hBr0->Fill(range,Tcharge1);
-							vRange1.push_back(range);
-							vCharge1.push_back(Tcharge1);
-							//hBr0->Fill(range,tq);
-				    }
-				aGraph1 = new TGraph(vRange1.size(), &vRange1[0], &vCharge1[0]);
-				TF1 *RCFunc1 = new TF1("RCFunc1",aGraph1toFunc,0,vRange1.back());
-
-
-						std::vector<ATHit>* hitArray2 = trackCand.at(two_p_pair[w].second).GetHitArray();
-						Int_t nHits2 = hitArray2->size();
-						Int_t tracknumb2 = two_p_pair[w].second;
-						//std::cout << "Init   Hitarray size    "<<nHits << '\n';
-						hBr1 = new TH1D(Form("Bragg_%d_evt_%d",tracknumb2,i),Form("Bragg_%d_evt_%d",tracknumb2,i),Nbins,0,600) ;
-						Double_t Tcharge2 = 0;
-						vector<Double_t> vRange2;
-						vector<Double_t> vCharge2;
-
-						for(Int_t iHit=0; iHit<nHits2; iHit++){
-								ATHit hit = hitArray2->at(iHit);
-								TVector3 position = hit.GetPosition();
-								Double_t tq = hit.GetCharge();
-								TVector3 rangePoint =  position - vertexMean;
-								Double_t range = rangePoint.Mag();
-								Tcharge2 += tq;
-								hBr1->Fill(range,Tcharge2);
-								vRange2.push_back(range);
-								vCharge2.push_back(Tcharge2);
-								//hBr1->Fill(range,tq);
-							}
-				aGraph2 = new TGraph(vRange2.size(), &vRange2[0], &vCharge2[0]);
-				TF1 *RCFunc2 = new TF1("RCFunc2",aGraph2toFunc,0,vRange2.back());
-				aGraph1->Clear();
-				aGraph2->Clear();
-				for(Int_t k=0; k<Nbins; k++){
-					hBr0->Fill(k,aGraph2toFunc->Eval(vRange2));
-					hBr1->Fill(k,aGraph2toFunc->Eval());
-				}
-					chargeTot1 = Tcharge1;
-					chargeTot2 = Tcharge2;
-*/
-//------------------------------------------
-
-
-
-
-
-					//std::cout<<s800cal->GetTS()<<" "<<MaxR1<<" "<<MaxR2<<" "<<MaxZ1<<" "<<MaxZ2<<std::endl;
-
-					//if(MaxR1>=242. || MaxR2>=242. || MaxR1<=25. || MaxR2<=25. || MaxZ1>973. || MaxZ2>973.) continue; //if do no stop in chamber or in the beam hole
-					if(MaxR1>=245. || MaxR2>=245. || MaxZ1>1000. || MaxZ2>1000.) continue;
+					std::cout<<"Event:   "<<i<<std::endl;
 
 
 					//------------------------------------------------------------------------------
 
+					verZ->Fill(vertexMean.Z());
+
+
         	lastX1 = lastPoint1.X();
         	lastY1 = lastPoint1.Y();
         	lastZ1 = lastPoint1.Z();
-        	lastX2 = lastPoint2.X();
-        	lastY2 = lastPoint2.Y();
-        	lastZ2 = lastPoint2.Z();
         	vertexX = vertexMean.X();
         	vertexY = vertexMean.Y();
         	vertexZ = vertexMean.Z();
 
-		//TVector3 origin(0.,0.,0.);
+        	theta1 = trackCand.at(w).GetThetaPhi(vertexMean, lastPoint1,1).first;
+        	phi1 = trackCand.at(w).GetThetaPhi(vertexMean, lastPoint1,1).second;
 
-		beam_theta = vertexMean.Theta();
-		beam_phi = vertexMean.Phi();
-/*
-        	theta1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1).first;//GetThetaPhi(..,..,1) for data
-        	theta2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2).first;//GetThetaPhi(..,..,1) for data
-        	phi1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1).second;//GetThetaPhi(..,..,1) for data
-        	phi2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2).second;//GetThetaPhi(..,..,1) for
-*/
-		theta1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1,1).first;//GetThetaPhi(..,..,1) for data
-        	theta2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2,1).first;//GetThetaPhi(..,..,1) for data
-        	phi1 = trackCand.at(two_p_pair[w].first).GetThetaPhi(vertexMean, lastPoint1,1).second;//GetThetaPhi(..,..,1) for data
-        	phi2 = trackCand.at(two_p_pair[w].second).GetThetaPhi(vertexMean, lastPoint2,1).second;//GetThetaPhi(..,..,1) for data
+        	std::vector<Double_t> fitPar1 = trackCand.at(w).GetFitPar();
 
-        	std::vector<Double_t> fitPar1 = trackCand.at(two_p_pair[w].first).GetFitPar();
-        	std::vector<Double_t> fitPar2 = trackCand.at(two_p_pair[w].second).GetFitPar();
-
-        	TVector3 vp1(TMath::Sign(1,lastX1)*fabs(fitPar1[1]),TMath::Sign(1,lastY1)*fabs(fitPar1[3]),TMath::Sign(1,(lastZ1-vertexZ))*fabs(fitPar1[5]));
-        	TVector3 vp2(TMath::Sign(1,lastX2)*fabs(fitPar2[1]),TMath::Sign(1,lastY2)*fabs(fitPar2[3]),TMath::Sign(1,(lastZ2-vertexZ))*fabs(fitPar2[5]));
-        	angle12=FindAngleBetweenTracks(vp1,vp2);
-
-				//	std::cout<<i<<" "<<" protons 1 2 theta : "<<theta1<<" "<<theta2<<"\n";
-				//	std::cout<<i<<" protons 1 2 phi : "<<phi1<<" "<<phi2<<"\n";
-
-        	range_p1 = trackCand.at(two_p_pair[w].first).GetLinearRange(vertexMean,lastPoint1);
-        	range_p2 = trackCand.at(two_p_pair[w].second).GetLinearRange(vertexMean,lastPoint2);
-
-        	//==============================================================================
-        	// methods to get the proton eloss
-
-        	//eLoss_p1_reco = eloss_approx(range_p1);
-        	//eLoss_p2_reco = eloss_approx(range_p2);
-
+        	range_p1 = trackCand.at(w).GetLinearRange(vertexMean,lastPoint1);
         	eLoss_p1_reco = graphtable->Eval(range_p1);
-        	eLoss_p2_reco = graphtable->Eval(range_p2);
 
-        	//std::cout<<i<<" vertex : "<<vertexZ<<"\n";
-        	//std::cout<<i<<" range p1 p2 : "<<range_p1<<" "<<range_p2<<"\n";
-        	//std::cout<<i<<" eloss reco : "<<eLoss_p1_reco<<" "<<eLoss_p2_reco<<" "<<"\n";
+					theta_range->Fill(theta1*180/3.1415,range_p1);
+					theta_kin->Fill(theta1*180/3.1415,eLoss_p1_reco);
 
-        	//==============================================================================
+					vertexvsAngle->Fill(vertexMean.Z(),theta1*180/3.1415,range_p1);
 
-        	epsilon_pp = 0.5*(eLoss_p1_reco + eLoss_p2_reco - 2 * sqrt(eLoss_p1_reco * eLoss_p2_reco) * TMath::Cos (angle12));
-        	epsilon_pp_reco->Fill(epsilon_pp);
+					VerX.push_back(vertexMean.X());
+					VerY.push_back(vertexMean.Y());
+					VerZ.push_back(vertexMean.Z());
+					PlastX.push_back(lastPoint1.X());
+					PlastY.push_back(lastPoint1.Y());
+					PlastZ.push_back(lastPoint1.Z());
+					Range.push_back(range_p1);
+					ThetaLab.push_back(theta1*180/3.1415);
+					PhiLab.push_back(phi1*180/3.1415);
 
-          // reconstruction of 2He
-        	mom1_norm_reco = TMath::Sqrt(eLoss_p1_reco * eLoss_p1_reco + 2.0 * eLoss_p1_reco * proton_mass);
-        	mom_proton1_reco.SetX (mom1_norm_reco * TMath::Sin(theta1) * TMath::Cos(phi1));
-        	mom_proton1_reco.SetY (mom1_norm_reco * TMath::Sin(theta1) * TMath::Sin(phi1));
-        	mom_proton1_reco.SetZ (mom1_norm_reco * TMath::Cos(theta1));
+					std::vector<ATHit> *HitArray = trackCand.at(w).GetHitArray();
+					Nhits_track.push_back(HitArray->size());
+					double cargaInt = 0;
+					for(auto j = HitArray->begin(); j != HitArray->end(); ++j){
 
-        	mom2_norm_reco = TMath::Sqrt (eLoss_p2_reco * eLoss_p2_reco + 2.0 * eLoss_p2_reco * proton_mass);
-        	mom_proton2_reco.SetX (mom2_norm_reco * TMath::Sin(theta2) * TMath::Cos(phi2));
-        	mom_proton2_reco.SetY (mom2_norm_reco * TMath::Sin(theta2) * TMath::Sin(phi2));
-        	mom_proton2_reco.SetZ (mom2_norm_reco * TMath::Cos(theta2));
-        	//std::cout<<i<<" mom1 : "<<mom_proton1_reco.Mag()<<"\n";
-        	//std::cout<<i<<" mom2 : "<<mom_proton2_reco.Mag()<<"\n";
+				         double lacarga = j->GetCharge();
+								 cargaInt +=lacarga;
+							 }
+					Charge.push_back(cargaInt);
 
-        	mom_He2_reco = mom_proton1_reco + mom_proton2_reco;
-        	E_tot_he2 = (proton_mass + eLoss_p1_reco) + (proton_mass + eLoss_p2_reco);
-        	he2_mass_ex = TMath::Sqrt (E_tot_he2 * E_tot_he2 - mom_He2_reco.Mag2 ());
-        	ex_he2_reco->Fill (he2_mass_ex - he2_mass);
+				}//all tracks
+		} //gated and  tracks.size()>0
 
-        	kin_He2 = TMath::Sqrt (mom_He2_reco.Mag2 () + he2_mass_ex * he2_mass_ex) - he2_mass_ex;
-        	theta_He2 = mom_He2_reco.Theta ()* TMath::RadToDeg();
 
-        	phi_He2 = mom_He2_reco.Phi ()* TMath::RadToDeg();
-        	theta_r_he2_reco->Fill (theta_He2);
-        	phi_r_he2_reco->Fill (phi_He2);
-        	kin_r_he2_reco->Fill (kin_He2);
-        	theta_kin_he2_reco->Fill (theta_He2, kin_He2);
-
-        	d2heana->kine_2b (proj_mass, target_mass, he2_mass_ex, recoil_mass, Ekin_proj, theta_He2 * TMath::DegToRad (), kin_He2);
-
-        	theta_cm = d2heana->GetThetaCM ();
-        	Ex4 = d2heana->GetMissingMass ();
-
-        	thetacm_he2_reco->Fill (theta_cm);
-        	Ex_reco->Fill (Ex4);
-        	thetacm_Ex_he2_reco->Fill (theta_cm, Ex4);
-        	thetacm_epsilon_pp_reco->Fill(theta_cm,epsilon_pp);
-
-        	ivt=i;
-        	anatree->Fill();
-//------- New Bragg ------------------------------
-/*		outfile->cd("Bragg");
-		hBr0->Write();
-		hBr1->Write();
-		delete hBr0;
-		delete hBr1;
-*/
-//-------------------------------------------------
-				}//two proton pairs
-		} //gated and  tracks.size()>1
+		anatree->Fill();
 	}// Event loop
 
 
@@ -691,6 +548,7 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 	outfile->cd();
 	anatree->Write();
 
+	/*
 	//	tracks_z_r->Write ();
 	//	tracks_x_y->Write ();
 	theta_r_he2_reco->Write ();
@@ -709,7 +567,17 @@ void analysis(int runNumberS800=2063, int runNumberATTPC=63)
 	dta_ata->Write();
 	x_y_crdc1->Write();
 	x_y_crdc2->Write();
-
+	*/
+	outfile->cd("nogate");
+	XfpObj_Obj_ng->Write();
+	ICSum_Obj_ng->Write();
+	X_afp_ng->Write();
+	outfile->cd("gated");
+	XfpObj_Obj_g->Write();
+	ICSum_Obj_g->Write();
+	X_afp_g->Write();
+	theta_range->Write();
+	vertexvsAngle->Write();
 
 	outfile->Close();
 

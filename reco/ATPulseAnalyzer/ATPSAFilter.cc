@@ -49,8 +49,9 @@ ATPSAFilter::Analyze(ATRawEvent *rawEvent, ATEvent *event)
 
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGBA>);
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
-  cloud->points.resize(numPads);
+  cloud->points.resize(3*numPads); //in case of multiple hits per pad
 
+  //std::cout<<" ATPSAFilter   Number of pads "<<numPads<<std::endl;
 
   /*TH2F* cloud_ini = new TH2F("cloud_ini","cloud_ini",1000,-250,250,1000,-250,250);
   cloud_ini->SetMarkerColor(kRed);
@@ -137,8 +138,11 @@ ATPSAFilter::Analyze(ATRawEvent *rawEvent, ATEvent *event)
   }
 
 
+
   if (numPeaks == 0) fValidBuff = kFALSE;
        //continue;
+
+
 
    if(fValidBuff){
 
@@ -296,6 +300,8 @@ ATPSAFilter::Analyze(ATRawEvent *rawEvent, ATEvent *event)
 
  }//Pad Loop
 
+      //std::cout<<" ATPSAFilter   Number of Hits "<<hitNum<<std::endl;
+
       //Inliers
       cloud->points.resize(hitNum);
       pcl::StatisticalOutlierRemoval<pcl::PointXYZRGBA> sor;
@@ -306,6 +312,7 @@ ATPSAFilter::Analyze(ATRawEvent *rawEvent, ATEvent *event)
       //Outliers
       //sor.setNegative(true);
       //sor.filter(*cloud_filtered);
+
 
 
           for(Int_t pc = 0;pc<cloud_filtered->points.size();pc++)

@@ -12,6 +12,7 @@
 #include "TFitResult.h"
 #include "TRandom3.h"
 #include "TMatrixD.h"
+#include "TVector3.h"
 
 using namespace ROOT::Math;
 
@@ -32,7 +33,11 @@ class ATd2HeAnalysis {
         TMatrixD CalcV();
         TMatrixD Calcd(TMatrixD alpha0);
         TMatrixD CalcD(TMatrixD alpha0);
+        TMatrixD CalcV_new();
+        TMatrixD Calcd_new(TMatrixD alpha0,Double_t ex_2he, Double_t ex_eje);
+        TMatrixD CalcD_new(TMatrixD alpha0);
         void KFit(std::vector<double> pin, std::vector<double>& pout);
+        void KFit_new(std::vector<double> pin, std::vector<double>& pout);
 
         void SetThetaCM(Double_t  value);
         void SetMissingMass(Double_t  value);

@@ -163,6 +163,7 @@ Bool_t ATMergeTask::isInPID(S800Calc *s800calc)
   if(!fSetCut3) InCondition3=1;
 
   std::cout <<" Number of TCutG files  "<<fcutPID1.size()<<" "<<fcutPID2.size()<<" "<<fcutPID3.size()<<" "<<InCondition1<<" "<<InCondition2<<" "<<InCondition3<< '\n';
+  //std::cout <<ObjCorr<<"  "<<XfObj_tof<<"  "<<S800_x0<<"  "<<S800_afp<<"  "<<S800_ICSum<< '\n';
 
   Int_t AndofCon = InCondition1*InCondition2*InCondition3;
 
@@ -317,7 +318,7 @@ std::cout<<" TS ATTPC "<<ATTPCTs<<std::endl;
         cout<<" -- Warning -- Timestamp of consecutive entries from ATTPC root file within the glom"<<endl;
       }
       else*/ if(isInGlom(fS800Ts.at(i)+fTsDelta,ATTPCTs) ){//fTsDelta constant offset likely from the length of the sync signal between S800 and AT-TPC
-      //if(isInGlom(fS800Ts.at(i),ATTPCTs) ){//special run180 
+      //if(isInGlom(fS800Ts.at(i),ATTPCTs) ){//special run180
       S800EvtMatch = (int)fS800Evt.at(i);
       std::cout<<" in glom "<<minj<<" "<<maxj<<" "<<i<<" "<<fS800Ts.at(i)<<" "<<ATTPCTs<<" "<<S800EvtMatch<<" "<<fS800TsFunc->Eval(ATTPCTs)<<" "<<ATTPCTs-fS800Ts.at(i)<<std::endl;
       fEvtMerged++;

@@ -1,10 +1,11 @@
 //void run_eve(TString  InputDataFile = "/home/juan/FairRoot/ATTPCROOTv2_simon/run_2016_0026.root",TString  OutputDataFile = "output.reco_display.root")
 //void run_eve(TString  InputDataFile = "run_unpacked_0002_new.root",TString  OutputDataFile = "output.reco_display.root")
 // void run_eve(TString  InputDataFile = "/mnt/simulations/ceclub/giraud/attpc/ATTPCROOTv2/macro/Simulation/d2He/Analyis_d2He/merged_run0002_48Ca.root",TString  OutputDataFile = "output.reco_display.root"){
-void run_eve(int runNumberS800, int runNumberATTPC){
+void run_eve(int runNumberS800=2063, int runNumberATTPC=63){
 
-  TString InputDataFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_%04d_%04d.root", runNumberS800, runNumberATTPC);
+  //TString InputDataFile = TString::Format("/mnt/analysis/e18008/rootMerg/run_%04d_%04d.root", runNumberS800, runNumberATTPC);
   // TString InputDataFile = TString::Format("/mnt/analysis/e18008/rootATTPC/run_unpacked_%04d.root", runNumberATTPC);
+  TString InputDataFile = "/home/juan/NSCL/elastics/run_2063_0063.root";
   TString  OutputDataFile = "output.reco_display.root";
 
   FairLogger *fLogger = FairLogger::GetLogger();

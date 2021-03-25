@@ -80,7 +80,7 @@ void ATd2HeAnalysis::kine_2b(Double_t m1, Double_t m2, Double_t m3, Double_t m4,
 
 
 
-	 THcm = theta_cm*TMath::RadToDeg();
+	       THcm = theta_cm*TMath::RadToDeg();
          MissingMass =  Ex;
 
 
@@ -193,7 +193,53 @@ TMatrixD ATd2HeAnalysis::CalcV(){
     //anticorrelation between the two protons to keep the relative energy approx. the same
     Vval[15][11] = -0.9*0.1; //Ener
     Vval[11][15] = -0.9*0.1;
-    
+
+    //Vval.Print();
+
+  	return Vval;
+
+}
+
+TMatrixD ATd2HeAnalysis::CalcV_new(){
+
+    TMatrixD Vval(12,12);
+  	Vval.Zero();
+  	TMatrixD Vsub1(4,4);
+  	Vsub1.Zero();
+    TMatrixD Vsub2(4,4);
+  	Vsub2.Zero();
+  	TMatrixD Vsub3(4,4);
+  	Vsub3.Zero();
+
+  	for(int i=0; i<3;i++){
+  		for(int j=0; j<3;j++){
+        if(i!=j) continue;
+  			if(i==0){
+  				 Vsub1[i][j] = 0.1;
+           Vsub2[i][j] = 0.1;
+  				 Vsub3[i][j] = 0.1;
+  				}
+  			if(i==1){
+  				 Vsub1[i][j] = 0.1;
+           Vsub2[i][j] = 0.1;
+  				 Vsub3[i][j] = 0.1;
+  				}
+  			if(i==2){
+  				 Vsub1[i][j] = 0.1;
+           Vsub2[i][j] = 0.1;
+  				 Vsub3[i][j] = 0.1;
+  				}
+  		}
+  	}
+
+  	Vval.SetSub(0,0,Vsub1);
+    Vval.SetSub(4,4,Vsub2);
+  	Vval.SetSub(8,8,Vsub3);
+
+    //anticorrelation between the two protons to keep the relative energy approx. the same
+    //Vval[15][11] = -0.9*0.1; //Ener
+    //Vval[11][15] = -0.9*0.1;
+
     //Vval.Print();
 
   	return Vval;
@@ -312,6 +358,65 @@ TMatrixD ATd2HeAnalysis::Calcd(TMatrixD alpha0){
 
 }
 
+TMatrixD ATd2HeAnalysis::CalcD_new(TMatrixD alpha0){
+
+	TMatrixD Dval(2,12);
+	Dval.Zero();
+
+  TVector3 Pb (alpha0[0][0],alpha0[1][0],alpha0[2][0]);
+	TVector3 P1 (alpha0[4][0],alpha0[5][0],alpha0[6][0]);
+	TVector3 P2 (alpha0[8][0],alpha0[9][0],alpha0[10][0]);
+  Double_t Eb = alpha0[3][0];
+  Double_t E1 = alpha0[7][0];
+  Double_t E2 = alpha0[11][0];
+  Double_t mt = 2.01410177812 * 931.494; //target mass (2H)
+
+
+  Dval[0][0] = 0; Dval[0][1] = 0; Dval[0][2] = 0;  Dval[0][3] = 0; //dH1/dPbx, dH1/dPbx, dH1/dPbx, dH1/dEb
+  Dval[0][4] = -2*(P1.X()+P2.X()); Dval[0][5] = -2*(P1.Y()+P2.Y()); Dval[0][6] = -2*(P1.Z()+P2.Z());  Dval[0][7] = 2*(E1+E2); //dH1/dP1x, dH1/dP1x, dH1/dP1x, dH1/dE1
+  Dval[0][8] = -2*(P1.X()+P2.X()); Dval[0][9] = -2*(P1.Y()+P2.Y()); Dval[0][10] = -2*(P1.Z()+P2.Z());  Dval[0][11] = 2*(E1+E2); //dH1/dP2x, dH1/dP2x, dH1/dP2x, dH1/dE2
+
+  Dval[1][0] = -2*(Pb.X()-P1.X()-P2.X()); Dval[1][1] = -2*(Pb.Y()-P1.Y()-P2.Y()); Dval[1][2] = -2*(Pb.Z()-P1.Z()-P2.Z());  Dval[1][3] = 2*(Eb+mt-E1-E2); //dH2/dPbx, dH2/dPbx, dH2/dPbx, dH2/dEb
+  Dval[1][4] = 2*(Pb.X()-P1.X()-P2.X()); Dval[1][5] = 2*(Pb.Y()-P1.Y()-P2.Y()); Dval[1][6] = 2*(Pb.Z()-P1.Z()-P2.Z());  Dval[1][7] = -2*(Eb+mt-E1-E2); //dH2/dP1x, dH2/dP1x, dH2/dP1x, dH2/dE1
+  Dval[1][8] = 2*(Pb.X()-P1.X()-P2.X()); Dval[1][9] = 2*(Pb.Y()-P1.Y()-P2.Y()); Dval[1][10] = 2*(Pb.Z()-P1.Z()-P2.Z());  Dval[1][11] = -2*(Eb+mt-E1-E2); //dH2/dP2x, dH2/dP2x, dH2/dP2x, dH2/dE2
+
+
+	return Dval;
+
+
+}
+
+
+TMatrixD ATd2HeAnalysis::Calcd_new(TMatrixD alpha0, Double_t ex_2he, Double_t ex_eje){
+
+	TMatrixD dval(2,1);
+	dval.Zero();
+
+
+  TVector3 Pb (alpha0[0][0],alpha0[1][0],alpha0[2][0]);
+	TVector3 P1 (alpha0[4][0],alpha0[5][0],alpha0[6][0]);
+	TVector3 P2 (alpha0[8][0],alpha0[9][0],alpha0[10][0]);
+  Double_t Eb = alpha0[3][0];
+  Double_t E1 = alpha0[7][0];
+  Double_t E2 = alpha0[11][0];
+  Double_t mt = 2.01410177812 * 931.494; //target mass (2H)
+  Double_t m2he = 2.0*1.0078250322 * 931.494 + ex_2he; //2He mass
+  Double_t meje = 14.00307400443 * 931.494 + ex_eje; //ejectile mass
+
+  TVector3 mom2He = P1 + P2;
+  TVector3 momEje = Pb - P1 - P2;
+
+	double h1 = pow((E1+E2),2.0) - mom2He.Mag2() - pow(m2he,2.0); //2He MissingMass
+	double h2 = pow((Eb+mt-E1-E2),2.0) - momEje.Mag2() - pow(meje,2.0); //Ejectile MissingMass
+
+	dval[0][0] = h1;
+	dval[1][0] = h2;
+
+	return dval;
+
+}
+
+
 void ATd2HeAnalysis::KFit(std::vector<double> pin, std::vector<double>& pout){
 
     //Kinematic Fitting based on https://www.phys.ufl.edu/~avery/fitting.html
@@ -389,6 +494,115 @@ void ATd2HeAnalysis::KFit(std::vector<double> pin, std::vector<double>& pout){
 		}
 
     for(int w=0;w<16;w++) pout.push_back(alpha[w][0]);
+
+
+}
+
+void ATd2HeAnalysis::KFit_new(std::vector<double> pin, std::vector<double>& pout){
+
+    //Kinematic Fitting based on https://www.phys.ufl.edu/~avery/fitting.html
+    //Input vector is composed by 3 four-momentum vectors of (projectile,proton1,proton2)
+    //Output vector contains the fitted coordinates in the same order
+
+    TMatrixD alpha0(12,1);
+  	alpha0.Zero();
+  	TMatrixD alpha1(4,1);
+  	alpha1.Zero();
+    TMatrixD alpha2(4,1);
+    alpha2.Zero();
+  	TMatrixD alpha3(4,1);
+  	alpha3.Zero();
+
+  	alpha1[0][0] = pin[0]; alpha1[1][0] = pin[1]; alpha1[2][0] = pin[2]; alpha1[3][0] = pin[3]; //projectile (px,py,pz,E)
+    alpha2[0][0] = pin[4]; alpha2[1][0] = pin[5]; alpha2[2][0] = pin[6]; alpha2[3][0] = pin[7]; //proton 1 (px,py,pz,E)
+  	alpha3[0][0] = pin[8]; alpha3[1][0] = pin[9]; alpha3[2][0] = pin[10]; alpha3[3][0] = pin[11]; //proton 2 (px,py,pz,E)
+
+  	alpha0.SetSub(0,0,alpha1);
+    alpha0.SetSub(4,0,alpha2);
+  	alpha0.SetSub(8,0,alpha3);
+
+    TVector3 Pb (alpha0[0][0],alpha0[1][0],alpha0[2][0]);
+  	TVector3 P1 (alpha0[4][0],alpha0[5][0],alpha0[6][0]);
+  	TVector3 P2 (alpha0[8][0],alpha0[9][0],alpha0[10][0]);
+    Double_t Eb = alpha0[3][0];
+    Double_t E1 = alpha0[7][0];
+    Double_t E2 = alpha0[11][0];
+    Double_t mt = 2.01410177812 * 931.494; //target mass (2H)
+    Double_t m2he_gs = 2.0*1.0078250322 * 931.494 ; //2He mass
+    Double_t meje_gs = 14.00307400443 * 931.494 ; //ejectile mass
+    TVector3 mom2He = P1 + P2;
+    TVector3 momEje = Pb - P1 - P2;
+    Double_t ex_he2 = sqrt( pow(E1+E2,2.0) - mom2He.Mag2()) - m2he_gs;
+  	//Double_t ex_eje = sqrt( pow(Eb+mt-E1-E2,2.0) - momEje.Mag2()) - meje_gs;
+
+    //Double_t ex_he2 = 0;
+  	Double_t ex_eje = 3.9;
+
+
+  	TMatrixD alpha(12,1);
+  	TMatrixD delta_alpha(12,1);
+  	delta_alpha.Zero();
+  	alpha = alpha0;
+
+  	TMatrixD chi2(1,1);
+  	chi2.Zero();
+
+  	TMatrixD Va = CalcV_new();
+
+
+    double weighting=0.5;
+	  int niter = 100;
+
+		for(int w =0; w<niter; w++){
+
+
+			TMatrixD D = CalcD_new(alpha);
+			//D.Print();
+			TMatrixD Dt = D;
+			Dt.T();
+
+			TMatrixD Vd = D*Va*Dt;
+			//Vd.Print();
+			Vd.Invert();
+			//Vd.Print();
+
+			// calculate Va
+			Va = Va - Va*Dt*Vd*D*Va*weighting;
+
+			//calculate labmda
+			TMatrixD d = Calcd_new(alpha,ex_he2,ex_eje);
+			TMatrixD temp1 = (d + D*delta_alpha);
+			TMatrixD lambda = Vd*temp1;
+
+
+			// calculate chi2
+			TMatrixD lambdaT = lambda;
+			chi2 = lambdaT.T()*temp1;
+
+      //calculate alpha
+			alpha = alpha0 - weighting*Va*Dt*lambda;
+			delta_alpha = alpha - alpha0;
+			alpha0 = alpha;
+
+      TVector3 Pb_new (alpha0[0][0],alpha0[1][0],alpha0[2][0]);
+    	TVector3 P1_new (alpha0[4][0],alpha0[5][0],alpha0[6][0]);
+    	TVector3 P2_new (alpha0[8][0],alpha0[9][0],alpha0[10][0]);
+      Double_t Eb_new = alpha0[3][0];
+      Double_t E1_new = alpha0[7][0];
+      Double_t E2_new = alpha0[11][0];
+      TVector3 mom2He_new = P1_new + P2_new;
+      TVector3 momEje_new = Pb_new - P1_new - P2_new;
+      Double_t ex_he2_new = sqrt( pow(E1_new+E2_new,2.0) - mom2He_new.Mag2()) - m2he_gs;
+    	Double_t ex_eje_new = sqrt( pow(Eb_new+mt-E1_new-E2_new,2.0) - momEje_new.Mag2()) - meje_gs;
+      ex_he2 = ex_he2_new;
+      //ex_eje = ex_eje_new;
+
+			if(fabs(chi2[0][0])<1.0) break;
+			//if(fabs(chisqrd)<0.1) break;
+
+		}
+
+    for(int w=0;w<12;w++) pout.push_back(alpha[w][0]);
 
 
 }

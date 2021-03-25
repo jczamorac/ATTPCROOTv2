@@ -514,7 +514,7 @@ ATEventManagerS800::DrawPIDFull()
 {
 
 
-    fPIDFull = new TH2F("PIDFull","PIDFull",500,-150,50,300,230,260);
+    fPIDFull = new TH2F("PIDFull","PIDFull",500,-120,20,600,240,300);
     //fLvsTheta->SetMarkerStyle(22);
     //fLvsTheta->SetMarkerColor(kRed);
 
@@ -527,7 +527,7 @@ ATEventManagerS800::DrawPID2Full()
 {
 
 
-    fPID2Full = new TH2F("PID2Full","PID2Full",500,-150,50,1000,1400,2200);
+    fPID2Full = new TH2F("PID2Full","PID2Full",500,-120,20,1000,0,750);
     //fLvsTheta->SetMarkerStyle(22);
     //fLvsTheta->SetMarkerColor(kRed);
 
@@ -539,7 +539,7 @@ void
 ATEventManagerS800::FillPIDFull()
 {
 //	TFile *fi=new TFile("/mnt/analysis/e18027/codes/ATTPCROOTv2/macro/Unpack_HDF5/e18027_S800/cuts/afp.root");		   // open file
- // 	TCutG *CUT1=(TCutG *)fi->Get("afp");	   // read CUTEC  
+ // 	TCutG *CUT1=(TCutG *)fi->Get("afp");	   // read CUTEC
 //	TFile *fi2=new TFile("/mnt/analysis/e18027/codes/ATTPCROOTv2/macro/Unpack_HDF5/e18027_S800/cuts/tof.root");		   // open file
  // 	TCutG *CUT2=(TCutG *)fi2->Get("tof");	   // read CUTEC
 
@@ -580,7 +580,7 @@ ATEventManagerS800::FillPIDFull()
     vector<Float_t> S800_timeMTDCXf = cS800Calc->GetMultiHitTOF()->GetMTDCXf();
     Float_t S800_timeObjSelect=-999;
     Float_t S800_timeXfSelect=-999;
-    Float_t ObjCorr=-999; 
+    Float_t ObjCorr=-999;
 
 
     for(int k=0; k<S800_timeMTDCXf.size(); k++){
